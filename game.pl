@@ -196,6 +196,7 @@ read_input(N, X, Y) :- % Falta adicionar limits
     read(X).    
 
 move([Player, Board, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Player]):-
+    NewX is 1+(X-1)*2,
     NewY is 10 - Y,
     piece_coordinates(Piece, PieceConfig), 
     get_value(PieceConfig, 0, 0, V0),
@@ -208,16 +209,16 @@ move([Player, Board, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Player])
     get_value(PieceConfig, 1, 3, V7),
 
     % Atualiza as colunas da linha 0
-    update_piece(Board, NewY, X, V0, Board1),
-    update_piece(Board1, NewY, X+1, V1, Board2),
-    update_piece(Board2, NewY, X+2, V2, Board3),
-    update_piece(Board3, NewY, X+3, V3, Board4),
+    update_piece(Board, NewY, NewX, V0, Board1),
+    update_piece(Board1, NewY, NewX+1, V1, Board2),
+    update_piece(Board2, NewY, NewX+2, V2, Board3),
+    update_piece(Board3, NewY, NewX+3, V3, Board4),
 
     % Atualiza as colunas da linha 1
-    update_piece(Board4, NewY+1, X, V4, Board5),
-    update_piece(Board5, NewY+1, X+1, V5, Board6),
-    update_piece(Board6, NewY+1, X+2, V6, Board7),
-    update_piece(Board7, NewY+1, X+3, V7, Board8).
+    update_piece(Board4, NewY+1, NewX, V4, Board5),
+    update_piece(Board5, NewY+1, NewX+1, V5, Board6),
+    update_piece(Board6, NewY+1, NewX+2, V6, Board7),
+    update_piece(Board7, NewY+1, NewX+3, V7, Board8).
 
 
 
