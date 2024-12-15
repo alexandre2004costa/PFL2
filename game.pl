@@ -88,12 +88,12 @@ board([
 
 display_board([]) :- !.
 display_board([Row | Rest]) :-
-    length(Row, Length), Len is Length + 2,
-    put_char('┌'), print_n(Len, '─'), put_char('┐'),
-    nl,
+    length(Row, Length), Len is Length + 6,
+    put_char('┌'), print_n(Len, '─'), put_char('┐'), nl,
+    put_char('│'), write(' '), print_n(2, '█'), print_n(Length, '▓'), print_n(2, '█'), write(' '), put_char('│'), nl,
     display_board_rows([Row | Rest]),
-    put_char('└'), print_n(Len, '─'), put_char('┘'),
-    nl.
+    put_char('│'), write(' '), print_n(2, '█'), print_n(Length, '▓'), print_n(2, '█'), write(' '), put_char('│'), nl,
+    put_char('└'), print_n(Len, '─'), put_char('┘'), nl.
 
 display_board_rows([]) :- !.
 display_board_rows([Row | Rest]) :-
@@ -101,9 +101,9 @@ display_board_rows([Row | Rest]) :-
     display_board_rows(Rest).  % Exibe as linhas restantes
 
 display_row(Row) :-
-    write('│'), write(' '),           % Começa com uma borda lateral
+    write('│'), write(' '), write('▒'), write('▒'),           % Começa com uma borda lateral
     display_cells(Row),   % Exibe as células da linha
-    write(' '), write('│'), nl.       % Fecha com uma borda lateral e pula linha
+    write('▒'), write('▒'), write(' '), write('│'), nl.       % Fecha com uma borda lateral e pula linha
 
 display_cells([]) :- !.   % Caso base: nada para exibir
 display_cells([Cell | Rest]) :-
