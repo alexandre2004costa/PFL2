@@ -1,3 +1,4 @@
+%Printing
 print_n(0,S):-!.
 print_n(N,S):- N1 is N-1, print_n(N1, S), put_char(S).
 
@@ -15,6 +16,8 @@ print_banner(Size, Symbol):-
     line(2, Symbol, Size),  
     word('1-> Play', Symbol, Size),
     line(1, Symbol, Size), 
+    %word('2-> Instructions', Symbol, Size),
+    %line(1, Symbol, Size),
     word('2-> Leave', Symbol, Size),
     print_n(Size, Symbol), nl.  
 
@@ -34,7 +37,7 @@ print_bannerPlay(Size, Symbol):-
     print_n(Size, Symbol), nl. 
 
 
-
+% Menu
 state(initial) :-
     print_banner(30, '0'),  
     write('Option: '), nl,
@@ -70,31 +73,38 @@ transition(mode, 4, initial).
 transition(_, _, initial). 
 
 board([
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', 'W', '0', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', '0', 'W', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '▓', '▓', '▒', '▒', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '▒', '▒', '▓', '▓', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█'],
+    ['█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█', '█']
 ]).
 
-% Exibe o tabuleiro linha por linha
-display_board([]) :- !. % Caso base: nada para exibir
+
+display_board([]) :- !.
 display_board([Row | Rest]) :-
+    length(Row, Length), Len is Length + 6,
+    put_char('┌'), print_n(Len, '─'), put_char('┐'), nl,
+    put_char('│'), write(' '), print_n(2, '█'), print_n(Length, '▓'), print_n(2, '█'), write(' '), put_char('│'), nl,
+    display_board_rows([Row | Rest]),
+    put_char('│'), write(' '), print_n(2, '█'), print_n(Length, '▓'), print_n(2, '█'), write(' '), put_char('│'), nl,
+    put_char('└'), print_n(Len, '─'), put_char('┘'), nl.
+
+display_board_rows([]) :- !.
+display_board_rows([Row | Rest]) :-
     display_row(Row),     % Exibe a linha atual
-    display_board(Rest).  % Exibe as linhas restantes
+    display_board_rows(Rest).  % Exibe as linhas restantes
 
-% Exibe uma linha do tabuleiro
 display_row(Row) :-
-    write('|'),           % Começa com uma borda lateral
+    write('│'), write(' '), write('▒'), write('▒'),           % Começa com uma borda lateral
     display_cells(Row),   % Exibe as células da linha
-    write('|'), nl.       % Fecha com uma borda lateral e pula linha
+    write('▒'), write('▒'), write(' '), write('│'), nl.       % Fecha com uma borda lateral e pula linha
 
-% Exibe cada célula de uma linha
 display_cells([]) :- !.   % Caso base: nada para exibir
 display_cells([Cell | Rest]) :-
     put_char(Cell),
@@ -133,10 +143,10 @@ piece_from_number(2, piece2).
 piece_from_number(3, piece3).
 piece_from_number(4, piece4).
 
-piece_coordinates(piece1, [['W','W'], ['0','0']]).
-piece_coordinates(piece2, [['W','0'], ['w','0']]).
-piece_coordinates(piece3, [['0','0'], ['w','w']]).
-piece_coordinates(piece4, [['0','W'], ['0','w']]).
+piece_coordinates(piece1, [['▓','▓','▓','▓'], ['▒','▒','▒','▒']]).
+piece_coordinates(piece2, [['▓','▓','▒','▒'], ['▓','▓','▒','▒']]).
+piece_coordinates(piece3, [['▒','▒','▒','▒'], ['▓','▓','▓','▓']]).
+piece_coordinates(piece4, [['▒','▒','▓','▓'], ['▒','▒','▓','▓']]).
 
 
 update_piece([Row|Rest], 1, Col, Piece, [NewRow|Rest]):- %Row of alteration
@@ -185,15 +195,40 @@ read_input(N, X, Y) :- % Falta adicionar limits
     write('Digite a coordenada X: '),
     read(X).    
 
-move([Player, Board, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board4, Player]):-
-    NewY is 10 - Y, 
-    piece_coordinates(Piece, PieceConfig),
-    get_value(PieceConfig, 0, 0,V0),
-    get_value(PieceConfig, 0, 1,V1),
-    get_value(PieceConfig, 1, 0,V2),
-    get_value(PieceConfig, 1, 1,V3),
-    update_piece(Board, NewY, X,V0, Board1),
-    update_piece(Board1, NewY, X+1,V1, Board2),
-    update_piece(Board2, NewY+1, X,V2, Board3),
-    update_piece(Board3, NewY+1, X+1,V3, Board4).
+move([Player, Board, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Player]):-
+    NewX is 1+(X-1)*2,
+    NewY is 10 - Y,
+    piece_coordinates(Piece, PieceConfig), 
+    get_value(PieceConfig, 0, 0, V0),
+    get_value(PieceConfig, 0, 1, V1),
+    get_value(PieceConfig, 0, 2, V2),
+    get_value(PieceConfig, 0, 3, V3),
+    get_value(PieceConfig, 1, 0, V4),
+    get_value(PieceConfig, 1, 1, V5),
+    get_value(PieceConfig, 1, 2, V6),
+    get_value(PieceConfig, 1, 3, V7),
+
+    % Atualiza as colunas da linha 0
+    update_piece(Board, NewY, NewX, V0, Board1),
+    update_piece(Board1, NewY, NewX+1, V1, Board2),
+    update_piece(Board2, NewY, NewX+2, V2, Board3),
+    update_piece(Board3, NewY, NewX+3, V3, Board4),
+
+    % Atualiza as colunas da linha 1
+    update_piece(Board4, NewY+1, NewX, V4, Board5),
+    update_piece(Board5, NewY+1, NewX+1, V5, Board6),
+    update_piece(Board6, NewY+1, NewX+2, V6, Board7),
+    update_piece(Board7, NewY+1, NewX+3, V7, Board8).
+
+
+
+% Progress
+print_title :-
+    writeln('██████╗ ██╗     ██╗███╗   ██╗ ██████╗ '),
+    writeln('██╔══██╗██║     ██║████╗  ██║██╔═══██╗'),
+    writeln('██████╔╝██║     ██║██╔██╗ ██║██║   ██║'),
+    writeln('██╔══██╗██║     ██║██║╚██╗██║██║▄▄ ██║'),
+    writeln('██████╔╝███████╗██║██║ ╚████║╚██████╔╝'),
+    writeln('╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝ ╚══▀▀═╝').
+
 
