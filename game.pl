@@ -202,16 +202,16 @@ play_game:-
 
 play_turn([Player, Board, Levels, OtherPlayer]) :-
     display_game([Player, Board]),  
-    read_input(N,X,Y),
+    read_input(N,X,Y, Levels),
     piece_from_number(N, Piece),
     move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
     play_turn(NewState).
 
 
-read_input(N, X, Y) :-
+read_input(N, X, Y, Levels) :-
     write('Choose the type of block (1-4): '),
     validate_input_type(N), nl,
-    validate_coordinates(X,Y), nl.
+    validate_coordinates(X,Y, Levels), nl.
 
 validate_input_type(N) :-
     read(InputN),
@@ -220,18 +220,37 @@ validate_input_type(N) :-
     write('Invalid. Choose a number between 1 and 4. '),
     validate_input_type(N).
 
-validate_coordinates(X, Y) :-
+validate_coordinates(X, Y, Levels) :-
     write('Choose the coordinate X (1-9): '), read(InputX),
     write('Choose the coordinate Y (1-9): '), read(InputY),
-    validate_input_coordinates(InputX, InputY, X, Y).
+    validate_input_coordinates(InputX, InputY, X, Y, Levels).
 
-validate_input_coordinates(InputX, InputY, X, Y) :-
-    (InputX < 1; InputX > 9; InputY < 1; InputY > 9),
-    write('The coordinates must be numbers between 1 and 9.'), nl, nl,
+validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
+    (\+ integer(InputX); \+ integer(InputY)),
+    write('The coordinates must be numbers'), nl, nl,
     validate_coordinates(X, Y). 
 
-validate_input_coordinates(InputX, InputY, X, Y) :-
-    X = InputX, Y = InputY, !.
+validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
+    (InputX < 1; InputX > 9; InputY < 1; InputY > 9),
+    write('The coordinates must be between 1 and 9.'), nl, nl,
+    validate_coordinates(X, Y). 
+
+
+last([X], X).
+last([Elem|Rest], X): last(Rest, X).
+
+validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
+    BoardX is InputX - 1, BoardY is 9 - InputY,
+    length(Levels, NumberLevel), last(Levels, TopLevel),
+    0 is BoardX mod 2, 0 is BoardY mod 2, NumberLevel is 1, get_value(TopLevel, BoardX, BoardY, Value), Value == 'S',
+    write('TOPPPPPPPPPP.'), nl, nl, X = InputX, Y = InputY, !.
+    
+
+
+
+validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
+    write('Nope.'), nl, nl,
+    validate_coordinates(X, Y). 
 
 move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Levels, Player]):-
     NewX is 1+(X-1)*2,
@@ -260,3 +279,7 @@ move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, 
 
 
 
+%validate_board_coordinates(BoardX, BoardY, Levels)
+%    0 is BoardX mod 2, 0 is BoardY mod 2, NumberLevel is 1, get_value(TopLevel, BoardX, BoardY, Value), Value is 'S'.
+%    write('TOPPPPPPPPPP.'), nl, nl,
+%    validate_coordinates(X, Y). 
