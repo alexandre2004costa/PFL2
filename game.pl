@@ -87,6 +87,18 @@ board([
     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
 ]).
+board_top([
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
+]).
 
 
 display_board([]) :- !.
@@ -174,7 +186,7 @@ update_piece_col([Char|Rest], Col, Piece, [Char|Result]):- %Column of alteration
     
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    
-initial_state([Player, OtherPlayer], [Player, Board, OtherPlayer]).
+initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer]).
 
 
 display_game([Player, Board]):-
@@ -185,25 +197,43 @@ play :- state(initial).
 
 play_game:-
     board(X),
-    initial_state([p1, p2], [P1, X, P2]),
-    play_turn([P1, X, P2]).
+    initial_state([p1, p2], [P1, X, [X], P2]),
+    play_turn([P1, X, [X], P2]).
 
-play_turn([Player, Board, OtherPlayer]) :-
+play_turn([Player, Board, Levels, OtherPlayer]) :-
     display_game([Player, Board]),  
     read_input(N,X,Y),
     piece_from_number(N, Piece),
-    move([Player, Board, OtherPlayer], [Piece, Y, X], NewState),
+    move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
     play_turn(NewState).
 
-read_input(N, X, Y) :- % Falta adicionar limits
-    write('Escolha o tipo de peça (1-4): '),
-    read(N),
-    write('Digite a coordenada Y: '),
-    read(Y),
-    write('Digite a coordenada X: '),
-    read(X).    
 
-move([Player, Board, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Player]):-
+read_input(N, X, Y) :-
+    write('Choose the type of block (1-4): '),
+    validate_input_type(N), nl,
+    validate_coordinates(X,Y), nl.
+
+validate_input_type(N) :-
+    read(InputN),
+    integer(InputN), InputN >= 1, InputN =< 4, N = InputN, !.
+validate_input_type(N) :-
+    write('Invalid. Choose a number between 1 and 4. '),
+    validate_input_type(N).
+
+validate_coordinates(X, Y) :-
+    write('Choose the coordinate X (1-9): '), read(InputX),
+    write('Choose the coordinate Y (1-9): '), read(InputY),
+    validate_input_coordinates(InputX, InputY, X, Y).
+
+validate_input_coordinates(InputX, InputY, X, Y) :-
+    (InputX < 1; InputX > 9; InputY < 1; InputY > 9),
+    write('The coordinates must be numbers between 1 and 9.'), nl, nl,
+    validate_coordinates(X, Y). 
+
+validate_input_coordinates(InputX, InputY, X, Y) :-
+    X = InputX, Y = InputY, !.
+
+move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Levels, Player]):-
     NewX is 1+(X-1)*2,
     NewY is 10 - Y,
     piece_coordinates(Piece, PieceConfig), 
