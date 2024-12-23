@@ -87,17 +87,17 @@ board([
     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
 ]).
-board_top([
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
+levels([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]).
 
 
@@ -185,7 +185,8 @@ update_piece_col([Char|Rest], Col, Piece, [Char|Result]):- %Column of alteration
     update_piece_col(Rest, Col1, Piece, Result).
     
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   
+
+% Isto parece-me estranho, parece que não está a fazer nada
 initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer]).
 
 
@@ -196,9 +197,9 @@ display_game([Player, Board]):-
 play :- state(initial).
 
 play_game:-
-    board(X),
-    initial_state([p1, p2], [P1, X, [X], P2]),
-    play_turn([P1, X, [X], P2]).
+    board(X), levels(Y),
+    initial_state([p1, p2], [P1, X, Y, P2]),
+    play_turn([P1, X, Y, P2]).
 
 play_turn([Player, Board, Levels, OtherPlayer]) :-
     display_game([Player, Board]),  
@@ -241,8 +242,12 @@ last([Elem|Rest], X): last(Rest, X).
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     BoardX is InputX - 1, BoardY is 9 - InputY,
-    length(Levels, NumberLevel), last(Levels, TopLevel),
-    0 is BoardX mod 2, 0 is BoardY mod 2, NumberLevel is 1, get_value(TopLevel, BoardX, BoardY, Value), Value == 'S',
+
+    0 is BoardX mod 2, 0 is BoardY mod 2, 
+    get_value(Levels, BoardX, BoardY, Level_LD), Level_LD is 0,
+    get_value(Levels, BoardX, BoardY+1, Level_LT), Level_LT is 0,
+    get_value(Levels, BoardX+1, BoardY, Level_RD), Level_RD is 0,
+    get_value(Levels, BoardX+1, BoardY+1, Level_RT), Level_RT is 0,
     write('TOPPPPPPPPPP.'), nl, nl, X = InputX, Y = InputY, !.
     
 
