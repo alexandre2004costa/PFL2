@@ -1,3 +1,4 @@
+:- consult(gameOver). 
 %Printing
 print_n(0,S):-!.
 print_n(N,S):- N1 is N-1, print_n(N1, S), put_char(S).
@@ -76,16 +77,16 @@ transition(mode, 4, initial).
 transition(_, _, initial). 
 
 board([
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'W', 'W', 'B', 'B', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'B', 'B', 'W', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'B', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'B', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'W', 'W', 'W', 'W', 'B', 'S', 'S', 'S', 'S', 'S', 'B', 'B', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'W', 'B', 'B', 'W', 'W', 'W', 'S', 'S', 'S', 'B', 'B', 'B', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'W', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'B', 'B', 'S', 'B', 'S'],
+    ['B', 'B', 'B', 'B', 'B', 'W', 'S', 'W', 'S', 'S', 'S', 'S', 'W', 'B', 'B', 'B', 'S', 'S', 'B', 'B'],
+    ['S', 'S', 'S', 'S', 'B', 'W', 'W', 'W', 'S', 'S', 'S', 'S', 'W', 'B', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'S', 'S', 'S', 'S', 'S', 'S']
 ]).
 
 
@@ -177,6 +178,7 @@ update_piece_col([Char|Rest], Col, Piece, [Char|Result]):- %Column of alteration
 initial_state([Player, OtherPlayer], [Player, Board, OtherPlayer]).
 
 
+
 display_game([Player, Board]):-
     display_board(Board), nl,
     displayPlayer(Player).
@@ -229,4 +231,7 @@ move([Player, Board, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Player])
     update_piece(Board7, NewY+1, NewX+3, V7, Board8).
 
 
-
+play_over:-
+    board(X),
+    game_over([p1,X], Winner),
+    write(Winner).
