@@ -76,16 +76,16 @@ transition(mode, 4, initial).
 transition(_, _, initial). 
 
 board([
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'W', 'W', 'B', 'B', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'B', 'B', 'W', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
-    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'W', 'W', 'W', 'W', 'B', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'W', 'B', 'B', 'W', 'W', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'W', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'S', 'W', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'W', 'W', 'W', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'S', 'W', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
 ]).
 
 
@@ -176,6 +176,67 @@ update_piece_col([Char|Rest], Col, Piece, [Char|Result]):- %Column of alteration
    
 initial_state([Player, OtherPlayer], [Player, Board, OtherPlayer]).
 
+process_line(_, _, [], _, _).
+
+process_line(Board, Y, [PlayerColor|Rest], X, PlayerColor) :-
+    write('ple'),nl,
+    dfs(Board, [X, Y], [], PlayerColor),
+    NextX is X + 1,
+    process_line(Board, Y, Rest, NextX, PlayerColor).
+
+process_line(Board, Y, [_|Rest], X, PlayerColor) :-
+    write('pl'),nl,
+    NextX is X + 1,
+    process_line(Board, Y, Rest, NextX, PlayerColor).
+
+play_over:-
+    board(X),
+    game_over([p1, X], 2).
+
+game_over([Player, [FirstLine|Board]], Winner):-
+    process_line([FirstLine|Board], 10, FirstLine, 1, 'W').
+
+
+dfs(Board, [0, Col], Visited, 'W'):-!.
+
+dfs(Board, [Row, 20], Visited, 'B'):-!.
+
+dfs(Board, [Col, Row], Visited, Color) :-
+    write('dfs'),nl,
+    write(Col),nl,
+    write(Row), 
+    is_valid_cell(Board, [Col, Row], Color), % same color, inside boundaries
+    Row2 is 10-Row,
+    Col2 is Col-1,
+    format("Explorando posição: (~w, ~w), Visitados: ~w, Cor: ~w~n", [Row2, Col2, Visited, Color]),
+    \+ member([Col, Row], Visited), % not visited
+    append(Visited, [[Col, Row]], NewVisited), % add to visited
+    % see close ones
+    (   NewRow1 is Row - 1, 
+        dfs(Board, [Col, NewRow1], NewVisited, Color)
+    ;   NewRow2 is Row + 1, 
+        dfs(Board, [Col, NewRow2], NewVisited, Color)
+    ;   NewCol1 is Col - 1, 
+        dfs(Board, [NewCol1, Row], NewVisited, Color)
+    ;   NewCol2 is Col + 1, 
+        dfs(Board, [NewCol2, Row], NewVisited, Color)
+    ).
+
+is_valid_cell(Board, [Col, Row], 'W') :-
+    Col2 is Col-1,
+    Row2 is 10-Row,
+    Row2 >= 0,
+    Col2 =< 20,
+    Col2 >= 0,
+    get_value(Board, Row2, Col2, 'W').
+
+is_valid_cell(Board, [Col, Row], 'B') :-
+    Col2 is Col-1,
+    Row2 is 10-Row,
+    Row2 >= 0,
+    Row2 =< 10,
+    Col2 >= 0,
+    get_value(Board, Row2, Col2, 'B').
 
 display_game([Player, Board]):-
     display_board(Board), nl,
