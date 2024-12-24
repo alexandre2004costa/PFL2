@@ -241,31 +241,29 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     validate_coordinates(X, Y). 
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
-    X2 is InputX-1, 
     BoardX is 1+(InputX-1)*2, BoardY is 10 - InputY, 
     BoardX2 is BoardX+2, BoardY2 is BoardY-1,
 
-    0 is X2 mod 2, 1 is BoardY mod 2, 
+    1 is InputX mod 2, 1 is BoardY mod 2, 
     get_value(Levels, BoardY, BoardX, Level_LD), write( Level_LD), nl, Level_LD is 0,
     get_value(Levels, BoardY, BoardX2, Level_LT), write( Level_LT), nl, Level_LT is 0,
     get_value(Levels, BoardY2, BoardX, Level_RD), write( Level_RD), nl, Level_RD is 0,
     get_value(Levels, BoardY2, BoardX2, Level_RT), write( Level_RT), nl, Level_RT is 0,
-    write('TOPPPPPPPPPP.'), nl, nl, X = InputX, Y = InputY, !.
-    % depois tirar o write, só para testes
+    write('Level 0.'), nl, nl, X = InputX, Y = InputY, !.
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
-    validate_input_level(InputX, InputY, Levels, Same),
-    write('sofi'), Same == "True", write('oi').
+    BoardX is 1+(InputX-1)*2, BoardY is 10 - InputY,
+    BoardX2 is BoardX+2, BoardY2 is BoardY-1,
 
-
-validate_input_level(InputX, InputY, Levels, Same):-
-    BoardX is 1+(InputX-1)*2, BoardY is 10 - InputY, 
     get_value(Levels, BoardY, BoardX, L1),
-    get_value(Levels, BoardY, BoardX+2, L2),
-    get_value(Levels, BoardY+1, BoardX, L3),
-    get_value(Levels, BoardY+1, BoardX+2, L4),
-    L2 is L1, L3 is L1, L4 is L1,  write('ola'), Same = 'True'.
-validate_input_level(_, _, _, 'False').
+    get_value(Levels, BoardY, BoardX2, L2),
+    get_value(Levels, BoardY2, BoardX, L3),
+    get_value(Levels, BoardY2, BoardX2, L4),
+    L2 is L1, L3 is L1, L4 is L1,
+
+    ((0 is L1 mod 2, 1 is InputX mod 2, 1 is InputY mod 2) ; (1 is L1 mod 2, 0 is InputX mod 2, 0 is InputY mod 2)),
+
+    write('Above levels.'), nl, nl, X = InputX, Y = InputY, !.
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     write('Nope.'), nl, nl,
