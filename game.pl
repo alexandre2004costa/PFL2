@@ -1,3 +1,4 @@
+:- use_module(library(random)).
 :- consult(gameOver). 
 :- consult(board). 
 :- consult(display). 
@@ -18,13 +19,13 @@ state(mode) :-
     state(NextState). 
 
 state(play_uu) :-
-    play_game.
+    play_game('PlayerVsPlayer').
 
 state(play_uc) :-
-    write('User vs PC selected.'), nl.
+    play_game('PlayerVsPc').
 
 state(play_cc) :-
-    write('PC vs PC selected.'), nl.
+    play_game('PcVsPc').
 
 state(exit) :-
     write('Exiting...'), nl. 
@@ -42,17 +43,22 @@ last([X], X).
 last([Elem|Rest], X): last(Rest, X).
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Isto parece-me estranho, parece que não está a fazer nada
+% Isto parece-me estranho, parece que não está a fazer nada -> Acredita que está
 initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer]).
 
 play :- state(initial).
 
-play_game:-
-    board(X), levels(Y),
-    initial_state([p1, p2], [P1, X, Y, P2]),
-    play_turn([P1, X, Y, P2]).
+choose_players('PlayerVsPlayer', [p1,p2]).
+choose_players('PlayerVsPc', [p1,pc1]).
+choose_players('PcVsPc', [pc1,pc2]).
 
-play_turn([Player, Board, Levels, OtherPlayer]) :-
+play_game(Mode):-
+    board(B), levels(L),
+    choose_players(Mode, Players),
+    initial_state(Players, [P1, B, L, P2]),
+    play_turn(Mode, [P1, B, L, P2]).
+
+play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer]) :-
     display_game([Player, Board]),  
     game_over([Player, Board], Winner),  
     ( Winner = 'T' ->                  
@@ -65,8 +71,69 @@ play_turn([Player, Board, Levels, OtherPlayer]) :-
         read_input(N,X,Y, Levels),
         piece_from_number(N, Piece),
         move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
-        play_turn(NewState)
+        play_turn('PlayerVsPlayer', NewState)
     ).
+
+play_turn('PlayerVsPc', [Player, Board, Levels, OtherPlayer]) :-
+    display_game([Player, Board]),  
+    game_over([Player, Board], Winner),  
+    ( Winner = 'T' ->                  
+        write('Game tied!')  
+    ;   
+        Winner \= none ->                  
+        format("~w venceu o jogo!~n", [Winner])  
+    ;
+        % Continue the game in case of no winner
+        read_input(N,X,Y, Levels),
+        piece_from_number(N, Piece),
+        move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
+        play_turn('PlayerVsPc', NewState)
+    ).
+
+play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer]) :-
+    display_game([Player, Board]),  
+    game_over([Player, Board], Winner),  
+    ( Winner = 'T' ->                  
+        write('Game tied!')  
+    ;   
+        Winner \= none ->                  
+        format("~w venceu o jogo!~n", [Winner])  
+    ;
+        % Continue the game in case of no winner
+        random_move(Board, N, X,Y, L),
+        piece_from_number(N, Piece),
+        move([Player, Board, L, OtherPlayer], [Piece, Y, X], NewState),
+        play_turn('PcVsPc', NewState)
+    ).
+
+is_valid(N, X,Y,Level, true).
+valid_moves(Board, Moves) :-
+    findall([N, X, Y, Level], (
+        generate_coordinates(1, 4, N),
+        generate_coordinates(1, 9, X),
+        generate_coordinates(1, 9, Y),
+        Level = 1,
+        is_valid(N, X, Y, Level, true)
+    ), Moves).
+
+generate_coordinates(Low, High, Low) :-
+    Low =< High.
+generate_coordinates(Low, High, Value) :-
+    Low < High,
+    Next is Low + 1,
+    generate_coordinates(Next, High, Value).
+
+random_index(Low, High, Index) :-
+    random(X),
+    Index is Low + floor(X * (High - Low)).
+
+random_move(Board, N, X, Y, Level):-
+    valid_moves(Board, Moves),
+    length(Moves, Size),      
+    Size > 0,                  
+    random(0, Size, Index),
+    get_value_in_row(Moves, Index, [N, X, Y, Level]).
+
 
 read_input(N, X, Y, Levels) :-
     write('Choose the type of block (1-4): '),
@@ -90,12 +157,12 @@ read_input_coordinates(X, Y, Levels) :-
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     (\+ integer(InputX); \+ integer(InputY)),
     write('The coordinates must be numbers'), nl, nl,
-    validate_coordinates(X, Y). 
+    validate_coordinates(X, Y, Levels). 
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     (InputX < 1; InputX > 9; InputY < 1; InputY > 9),
     write('The coordinates must be between 1 and 9.'), nl, nl,
-    validate_coordinates(X, Y). 
+    validate_coordinates(X, Y, Levels). 
 
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
@@ -139,8 +206,7 @@ validate_coordinates(X, Y, Levels, Valid) :-
 
 
 move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player]):-
-    NewX is 1+(X-1)*2, NewY is 10 - Y,
-
+    NewX is 1+(X-1)*2, NewY is 10 - Y, 
     % Update board
     piece_coordinates(Piece, PieceConfig), 
     get_value(PieceConfig, 0, 0, V0),
@@ -160,16 +226,17 @@ move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, 
     update_piece(Board4, NewY+1, NewX, V4, Board5),
     update_piece(Board5, NewY+1, NewX+1, V5, Board6),
     update_piece(Board6, NewY+1, NewX+2, V6, Board7),
-    update_piece(Board7, NewY+1, NewX+3, V7, Board8),
+    update_piece(Board7, NewY+1, NewX+3, V7, Board8).
 
     % Update levels
-    get_value(Levels, NewY, NewX, Level), NewLevel is Level+1,
-    update_piece(Levels, NewY, NewX, NewLevel, Levels1),
-    update_piece(Levels1, NewY, NewX+1, NewLevel, Levels2),
-    update_piece(Levels2, NewY, NewX+2, NewLevel, Levels3),
-    update_piece(Levels3, NewY, NewX+3, NewLevel, Levels4),
-    update_piece(Levels4, NewY+1, NewX, NewLevel, Levels5),
-    update_piece(Levels5, NewY+1, NewX+1, NewLevel, Levels6),
-    update_piece(Levels6, NewY+1, NewX+2, NewLevel, Levels7),
-    update_piece(Levels7, NewY+1, NewX+3, NewLevel, Levels8).
+    %get_value(Levels, NewY, NewX, Level), NewLevel is Level+1,
+    %update_piece(Levels, NewY, NewX, NewLevel, Levels1),
+    %update_piece(Levels1, NewY, NewX+1, NewLevel, Levels2),
+    %update_piece(Levels2, NewY, NewX+2, NewLevel, Levels3),
+    %update_piece(Levels3, NewY, NewX+3, NewLevel, Levels4),
+    %update_piece(Levels4, NewY+1, NewX, NewLevel, Levels5),
+    %update_piece(Levels5, NewY+1, NewX+1, NewLevel, Levels6),
+    %update_piece(Levels6, NewY+1, NewX+2, NewLevel, Levels7),
+    %update_piece(Levels7, NewY+1, NewX+3, NewLevel, Levels8),
+    %write('Uawdpdated'), nl.
 
