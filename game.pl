@@ -184,6 +184,8 @@ update_piece_col([Char|Rest], Col, Piece, [Char|Result]):- %Column of alteration
     Col1 is Col-1,
     update_piece_col(Rest, Col1, Piece, Result).
     
+last([X], X).
+last([Elem|Rest], X): last(Rest, X).
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Isto parece-me estranho, parece que não está a fazer nada
@@ -214,12 +216,14 @@ read_input(N, X, Y, Levels) :-
     validate_input_type(N), nl,
     validate_coordinates(X,Y, Levels), nl.
 
+
 validate_input_type(N) :-
     read(InputN),
     integer(InputN), InputN >= 1, InputN =< 4, N = InputN, !.
 validate_input_type(N) :-
     write('Invalid. Choose a number between 1 and 4. '),
     validate_input_type(N).
+
 
 validate_coordinates(X, Y, Levels) :-
     write('Choose the coordinate X (1-9): '), read(InputX),
@@ -236,30 +240,42 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     write('The coordinates must be between 1 and 9.'), nl, nl,
     validate_coordinates(X, Y). 
 
+validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
+    X2 is InputX-1, 
+    BoardX is 1+(InputX-1)*2, BoardY is 10 - InputY, 
+    BoardX2 is BoardX+2, BoardY2 is BoardY-1,
 
-last([X], X).
-last([Elem|Rest], X): last(Rest, X).
+    0 is X2 mod 2, 1 is BoardY mod 2, 
+    get_value(Levels, BoardY, BoardX, Level_LD), write( Level_LD), nl, Level_LD is 0,
+    get_value(Levels, BoardY, BoardX2, Level_LT), write( Level_LT), nl, Level_LT is 0,
+    get_value(Levels, BoardY2, BoardX, Level_RD), write( Level_RD), nl, Level_RD is 0,
+    get_value(Levels, BoardY2, BoardX2, Level_RT), write( Level_RT), nl, Level_RT is 0,
+    write('TOPPPPPPPPPP.'), nl, nl, X = InputX, Y = InputY, !.
+    % depois tirar o write, só para testes
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
-    BoardX is InputX - 1, BoardY is 9 - InputY,
-
-    0 is BoardX mod 2, 0 is BoardY mod 2, 
-    get_value(Levels, BoardX, BoardY, Level_LD), Level_LD is 0,
-    get_value(Levels, BoardX, BoardY+1, Level_LT), Level_LT is 0,
-    get_value(Levels, BoardX+1, BoardY, Level_RD), Level_RD is 0,
-    get_value(Levels, BoardX+1, BoardY+1, Level_RT), Level_RT is 0,
-    write('TOPPPPPPPPPP.'), nl, nl, X = InputX, Y = InputY, !.
-    
+    validate_input_level(InputX, InputY, Levels, Same),
+    write('sofi'), Same == "True", write('oi').
 
 
+validate_input_level(InputX, InputY, Levels, Same):-
+    BoardX is 1+(InputX-1)*2, BoardY is 10 - InputY, 
+    get_value(Levels, BoardY, BoardX, L1),
+    get_value(Levels, BoardY, BoardX+2, L2),
+    get_value(Levels, BoardY+1, BoardX, L3),
+    get_value(Levels, BoardY+1, BoardX+2, L4),
+    L2 is L1, L3 is L1, L4 is L1,  write('ola'), Same = 'True'.
+validate_input_level(_, _, _, 'False').
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     write('Nope.'), nl, nl,
-    validate_coordinates(X, Y). 
+    validate_coordinates(X, Y, Levels). 
 
-move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Levels, Player]):-
-    NewX is 1+(X-1)*2,
-    NewY is 10 - Y,
+
+move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player]):-
+    NewX is 1+(X-1)*2, NewY is 10 - Y,
+
+    % Update board
     piece_coordinates(Piece, PieceConfig), 
     get_value(PieceConfig, 0, 0, V0),
     get_value(PieceConfig, 0, 1, V1),
@@ -270,21 +286,24 @@ move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, 
     get_value(PieceConfig, 1, 2, V6),
     get_value(PieceConfig, 1, 3, V7),
 
-    % Atualiza as colunas da linha 0
+    get_value(Board, NewY, NewX, Value),
     update_piece(Board, NewY, NewX, V0, Board1),
     update_piece(Board1, NewY, NewX+1, V1, Board2),
     update_piece(Board2, NewY, NewX+2, V2, Board3),
     update_piece(Board3, NewY, NewX+3, V3, Board4),
-
-    % Atualiza as colunas da linha 1
     update_piece(Board4, NewY+1, NewX, V4, Board5),
     update_piece(Board5, NewY+1, NewX+1, V5, Board6),
     update_piece(Board6, NewY+1, NewX+2, V6, Board7),
-    update_piece(Board7, NewY+1, NewX+3, V7, Board8).
+    update_piece(Board7, NewY+1, NewX+3, V7, Board8),
 
 
-
-%validate_board_coordinates(BoardX, BoardY, Levels)
-%    0 is BoardX mod 2, 0 is BoardY mod 2, NumberLevel is 1, get_value(TopLevel, BoardX, BoardY, Value), Value is 'S'.
-%    write('TOPPPPPPPPPP.'), nl, nl,
-%    validate_coordinates(X, Y). 
+    % Update levels
+    get_value(Levels, NewY, NewX, Level), NewLevel is Level+1,
+    update_piece(Levels, NewY, NewX, NewLevel, Levels1),
+    update_piece(Levels1, NewY, NewX+1, NewLevel, Levels2),
+    update_piece(Levels2, NewY, NewX+2, NewLevel, Levels3),
+    update_piece(Levels3, NewY, NewX+3, NewLevel, Levels4),
+    update_piece(Levels4, NewY+1, NewX, NewLevel, Levels5),
+    update_piece(Levels5, NewY+1, NewX+1, NewLevel, Levels6),
+    update_piece(Levels6, NewY+1, NewX+2, NewLevel, Levels7),
+    update_piece(Levels7, NewY+1, NewX+3, NewLevel, Levels8).
