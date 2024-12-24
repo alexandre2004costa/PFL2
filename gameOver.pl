@@ -64,4 +64,5 @@ dfs(Board, [Col, Row], Visited, Color, Success) :-
 game_over([Player, [FirstLine|Board]], Winner) :-
     ( process_line([FirstLine|Board], 10, FirstLine, 1, 'W', true) -> Winner = 'W'
     ; process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B', true) -> Winner = 'B'
+    ; Winner = none
     ).
