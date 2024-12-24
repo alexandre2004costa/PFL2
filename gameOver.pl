@@ -62,6 +62,10 @@ dfs(Board, [Col, Row], Visited, Color, Success) :-
     Success = true. % in case of any Success
 
 game_over([Player, [FirstLine|Board]], Winner) :-
-    ( process_line([FirstLine|Board], 10, FirstLine, 1, 'W', true) -> Winner = 'W'
-    ; process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B', true) -> Winner = 'B'
+    process_line([FirstLine|Board], 10, FirstLine, 1, 'W', WhiteWins),
+    process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B', BlackWins),
+    ( WhiteWins, BlackWins -> Winner = 'T'   % Ambos venceram
+    ; WhiteWins -> Winner = 'W'                % Apenas branco venceu
+    ; BlackWins -> Winner = 'B'                % Apenas preto venceu
+    ; Winner = none                            % Nenhum venceu ainda
     ).
