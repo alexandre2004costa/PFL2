@@ -39,22 +39,36 @@ print_bannerPlay(Size, Symbol):-
     line(1, Symbol, Size), 
     print_n(Size, Symbol), nl.
 
+print_numbers(10):- !.
+print_numbers(N):-
+    write(N), write(' '), 
+    N2 is N+1, print_numbers(N2).
+
+
 display_board([]) :- !.
 display_board([Row | Rest]) :-
-    length(Row, Length), Len is Length + 6,
-    put_code(0x250C), print_n_code(Len, 0x2500), put_code(0x2510), nl,
-    put_code(0x2502), write(' '), print_n_code(2, 0x2588), print_n_code(Length, 0x2593), print_n_code(2, 0x2588), write(' '), put_code(0x2502), nl,
-    display_board_rows([Row | Rest]),
-    put_code(0x2502), write(' '), print_n_code(2, 0x2588), print_n_code(Length, 0x2593), print_n_code(2, 0x2588), write(' '), put_code(0x2502), nl,
-    put_code(0x2514), print_n_code(Len, 0x2500), put_code(0x2518), nl.
+    length(Row, Length), Len is Length + 6, RowsLen is 11, N is 1, 
+    write(' '), put_code(0x250C), print_n_code(Len, 0x2500), put_code(0x2510), nl,
+    write(' '), put_code(0x2502), write(' '), print_n_code(2, 0x2588), print_n_code(Length, 0x2593), print_n_code(2, 0x2588), write(' '), put_code(0x2502), nl,
+    display_board_rows([Row | Rest], RowsLen),
+    write(' '), put_code(0x2502), write(' '), print_n_code(2, 0x2588), print_n_code(Length, 0x2593), print_n_code(2, 0x2588), write(' '), put_code(0x2502), nl,
+    write(' '), put_code(0x2514), print_n_code(Len, 0x2500), put_code(0x2518), nl,
+    print_n(6, ' '), print_numbers(N), nl.
 
-display_board_rows([]) :- !.
-display_board_rows([Row | Rest]) :-
-    display_row(Row),     % Exibe a linha atual
-    display_board_rows(Rest).  % Exibe as linhas restantes
+display_board_rows([], _) :- !.
+display_board_rows([Row | Rest], RowsLen) :-
+    RowNumber is RowsLen-1,
+    display_row(Row, RowNumber),     % Exibe a linha atual
+    display_board_rows(Rest, RowNumber).  % Exibe as linhas restantes
 
-display_row(Row) :-
-    put_code(0x2502), write(' '), put_code(0x2592), put_code(0x2592),           % Começa com uma borda lateral
+display_row(Row, RowNumber) :-
+    RowNumber < 10,
+    write(RowNumber), put_code(0x2502), write(' '), put_code(0x2592), put_code(0x2592),           % Começa com uma borda lateral
+    display_cells(Row),   % Exibe as células da linha
+    put_code(0x2592), put_code(0x2592), write(' '), put_code(0x2502), nl.       % Fecha com uma borda lateral e pula linha
+
+display_row(Row, RowNumber) :-
+    write(' '), put_code(0x2502), write(' '), put_code(0x2592), put_code(0x2592),           % Começa com uma borda lateral
     display_cells(Row),   % Exibe as células da linha
     put_code(0x2592), put_code(0x2592), write(' '), put_code(0x2502), nl.       % Fecha com uma borda lateral e pula linha
 
