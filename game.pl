@@ -48,11 +48,14 @@ play_game:-
 
 play_turn([Player, Board, OtherPlayer]) :-
     display_game([Player, Board]),  
-    game_over([Player, Board], Winner),  % Verifica se o jogo acabou
-    ( Winner \= none ->                  % Se houver um vencedor
-        format("~w venceu o jogo!~n", [Winner])  % Anuncia o vencedor
+    game_over([Player, Board], Winner),  
+    ( Winner = 'T' ->                  
+        write('Game tied!')  
+    ;   
+        Winner \= none ->                  
+        format("~w venceu o jogo!~n", [Winner])  
     ;
-        % Continua o jogo se não houver vencedor
+        % Continue the game in case of no winner
         read_input(N, X, Y),
         piece_from_number(N, Piece),
         move([Player, Board, OtherPlayer], [Piece, Y, X], NewState),
