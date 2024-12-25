@@ -44,23 +44,23 @@ last([Elem|Rest], X): last(Rest, X).
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Isto parece-me estranho, parece que não está a fazer nada -> Acredita que está
-initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer]).
+initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]).
 
 play :- state(initial).
 
-choose_players('PlayerVsPlayer', [p1,p2]).
-choose_players('PlayerVsPc', [p1,pc1]).
-choose_players('PcVsPc', [pc1,pc2]).
+choose_players('PlayerVsPlayer', ['p1','p2']).
+choose_players('PlayerVsPc', ['p1','pc1']).
+choose_players('PcVsPc', ['pc1','pc2']).
 
 play_game(Mode):-
     board(B), levels(L),
     choose_players(Mode, Players),
-    initial_state(Players, [P1, B, L, P2]),
-    play_turn(Mode, [P1, B, L, P2]).
+    initial_state(Players, [P1, B, L, P2, MovesLeft]),
+    play_turn(Mode, [P1, B, L, P2, MovesLeft]).
 
-play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer]) :-
+play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft]) :-
     display_game([Player, Board]),  
-    game_over([Player, Board], Winner),  
+    game_over([Player, Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
     ;   
@@ -70,13 +70,13 @@ play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer]) :-
         % Continue the game in case of no winner
         read_input(N,X,Y, Levels),
         piece_from_number(N, Piece),
-        move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
+        move([Player, Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
         play_turn('PlayerVsPlayer', NewState)
     ).
 
-play_turn('PlayerVsPc', [Player, Board, Levels, OtherPlayer]) :-
-    display_game([Player, Board]),  
-    game_over([Player, Board], Winner),  
+play_turn('PlayerVsPc', ['p1', Board, Levels, OtherPlayer, MovesLeft]) :-
+    display_game(['p1', Board]),  
+    game_over(['p1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
     ;   
@@ -86,13 +86,13 @@ play_turn('PlayerVsPc', [Player, Board, Levels, OtherPlayer]) :-
         % Continue the game in case of no winner
         read_input(N,X,Y, Levels),
         piece_from_number(N, Piece),
-        move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
+        move(['p1', Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
         play_turn('PlayerVsPc', NewState)
     ).
 
-play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer]) :-
-    display_game([Player, Board]),  
-    game_over([Player, Board], Winner),  
+play_turn('PlayerVsPc', ['pc1', Board, Levels, OtherPlayer, MovesLeft]) :-
+    display_game(['pc1', Board]),  
+    game_over(['pc1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
     ;   
@@ -101,16 +101,27 @@ play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer]) :-
     ;
         % Continue the game in case of no winner
         random_move(Board,Levels, N, X,Y),
-        write(X),
-        write(Y),
         piece_from_number(N, Piece),
-        move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
+        move(['pc1', Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
+        play_turn('PlayerVsPc', NewState)
+    ).
+
+play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft]) :-
+    display_game([Player, Board]),  
+    game_over([Player, Board, MovesLeft], Winner),  
+    ( Winner = 'T' ->                  
+        write('Game tied!')  
+    ;   
+        Winner \= none ->                  
+        format("~w venceu o jogo!~n", [Winner])  
+    ;
+        % Continue the game in case of no winner
+        random_move(Board,Levels, N, X,Y),
+        piece_from_number(N, Piece),
+        move([Player, Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
         play_turn('PcVsPc', NewState)
     ).
-testValid(X):-
-    board(B),
-    levels(L),
-    valid_moves(B,L, X).
+
 valid_moves(Board, Levels, Moves) :-
     findall([N, X, Y], (
         generate_coordinates(1, 4, N),
@@ -132,13 +143,10 @@ random_index(Low, High, Index) :-
 
 random_move(Board, Levels, N, X, Y):-
     valid_moves(Board, Levels, Moves),
-    length(Moves, Size),      
-    Size > 0,                  
-    random(0, Size, Index),
-    get_value_in_row(Moves, Index, [N, X, Y]).
-
+    random_member([N, X, Y], Moves).
 
 read_input(N, X, Y, Levels) :-
+    display_pieces,
     write('Choose the type of block (1-4): '),
     validate_input_type(N), nl,
     read_input_coordinates(X, Y, Levels), nl.
@@ -213,7 +221,8 @@ validate_coordinates(X, Y, Levels, Valid) :-
 validate_coordinates(X, Y, Levels, Valid) :-
     Valid is 0.
 
-move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player]):-
+move([Player, Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player, Moves1]):-
+    Moves1 is MovesLeft-1,
     NewX is 1+(X-1)*2, NewY is 10 - Y, 
     % Update board
     piece_coordinates(Piece, PieceConfig), 
