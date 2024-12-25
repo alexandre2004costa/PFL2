@@ -22,7 +22,9 @@ print_banner(Size, Symbol):-
     line(1, Symbol, Size), 
     %word('2-> Instructions', Symbol, Size),
     %line(1, Symbol, Size),
-    word('2-> Leave', Symbol, Size),
+    word('2-> Configurations', Symbol, Size),
+    line(1, Symbol, Size), 
+    word('3-> Leave', Symbol, Size),
     print_n(Size, Symbol), nl.  
 
 print_bannerPlay(Size, Symbol):-
@@ -39,6 +41,20 @@ print_bannerPlay(Size, Symbol):-
     word('4-> back', Symbol, Size),
     line(1, Symbol, Size), 
     print_n(Size, Symbol), nl.
+
+print_bannerColors(Size, Symbol):-
+    print_n(Size, Symbol),  
+    line(1, Symbol, Size),  
+    write_color('1 -> ', red), display_code('B', red), display_code('W', red),nl,  
+    write_color('2 -> ', green), display_code('B', green), display_code('W', green),nl, 
+    write_color('3 -> ',yellow ), display_code('B', yellow), display_code('W', yellow),nl, 
+    write_color('4 -> ',blue ), display_code('B', blue), display_code('W', blue),nl, 
+    write_color('5 -> ',magenta ), display_code('B', magenta), display_code('W', magenta),nl, 
+    write_color('6 -> ',cyan ), display_code('B', cyan), display_code('W', cyan),nl,
+    write_color('7 -> ',white ), display_code('B', white), display_code('W', white),nl,
+    write_color('8 -> ',bold ), display_code('B', bold), display_code('W', bold),nl,
+    write_color('9 -> ',bold_cyan ), display_code('B', bold_cyan), display_code('W', bold_cyan),nl,reset_color,
+    print_n(Size, Symbol),nl.
 
 print_numbers(10):- !.
 print_numbers(N):-
@@ -75,7 +91,7 @@ display_row(Row, RowNumber) :-
 
 display_cells([]) :- !.   % Caso base: nada para exibir
 display_cells([Cell | Rest]) :-
-    display_code(Cell),
+    display_code(Cell, red),
     display_cells(Rest).     % Continua exibindo as células restantes
 
 display_code('S'):- put_code(0x2588).

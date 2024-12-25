@@ -2,6 +2,7 @@
 :- consult(gameOver). 
 :- consult(board). 
 :- consult(display). 
+:- consult(colors).
 
 % Menu
 state(initial) :-
@@ -13,6 +14,13 @@ state(initial) :-
 
 state(mode) :-
     print_bannerPlay(30, '0'),  
+    write('Option: '), nl,
+    read(Input),
+    transition(mode, Input, NextState), 
+    state(NextState). 
+
+state(colors):-
+    print_bannerColors(30, '0'),  
     write('Option: '), nl,
     read(Input),
     transition(mode, Input, NextState), 
@@ -31,11 +39,13 @@ state(exit) :-
     write('Exiting...'), nl. 
 
 transition(initial, 1, mode).  
-transition(initial, 2, exit).  
+transition(initial, 2, colors).  
+transition(initial, 3, exit).  
 transition(mode, 1, play_uu).  
 transition(mode, 2, play_uc).  
 transition(mode, 3, play_cc).
 transition(mode, 4, initial).
+%transition(colors, 4, initial).
 transition(_, _, initial). 
 
 
