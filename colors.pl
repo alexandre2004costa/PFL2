@@ -10,6 +10,12 @@ display_code('W', Color) :-
     put_code(0x2593),
     reset_color.
 
+put_code_color(C, Color):-
+    color_code(Color, Code),
+    format("~s", [Code]),
+    put_code(C),
+    reset_color.
+
 display_code('B', Color) :-
     color_code(Color, Code),
     format("~s", [Code]),
@@ -30,6 +36,15 @@ color_code(cyan, "\e[36m").
 color_code(white, "\e[37m").
 color_code(bold_cyan, "\e[1;36m").
 
+number_to_color(1, red).
+number_to_color(2, green).
+number_to_color(3, yellow).
+number_to_color(4, blue).
+number_to_color(5, magenta).
+number_to_color(6, cyan).
+number_to_color(7, white).
+number_to_color(8, bold_cyan).
+
 % background color
 color_code(bg_black, "\e[40m").
 color_code(bg_red, "\e[41m").
@@ -48,11 +63,16 @@ reset_color :-
 read_input_colors(Color1, Color2) :-
     write('Choose color1: '),
     validate_input_colors(Color1),
-    validate_input_colors(Color2).    
-    
-validate_input_colors(N):-
-    read(InputN),
-    integer(InputN), InputN >= 1, InputN =< 9, N = InputN, !.
-validate_input_colors(N) :-
-    write('Invalid. Choose a number between 1 and 9. '),
-    validate_input_colors(N).
+    write('Choose color2: '),
+    validate_input_colors(Color2).
+
+validate_input_colors(Color) :-
+    read(InputN),             % Lê a entrada
+    (   integer(InputN),       % Verifica se é um número inteiro
+        InputN >= 1,           % Verifica se está entre 1 e 8
+        InputN =< 8,
+        number_to_color(InputN, Color) % Converte para a cor
+    ->  true
+    ;   write('Invalid. Choose a number between 1 and 8. '), % Caso contrário
+        validate_input_colors(Color) % Tenta novamente
+    ).
