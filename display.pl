@@ -1,3 +1,4 @@
+
 %Printing
 print_n(0,S):-!.
 print_n(N,S):- N1 is N-1, print_n(N1, S), put_char(S).
@@ -82,17 +83,32 @@ display_code('W'):- put_code(0x2593).
 display_code('B'):- put_code(0x2592).
 
 
-displayPlayer(p1):-
+displayPlayer('p1'):-
     write('Player 1 move : '), nl.
 
-displayPlayer(p2):-
+displayPlayer('p2'):-
     write('Player 2 move : '), nl.
 
-displayPlayer(pc1):-
+displayPlayer('pc1'):-
     write('Pc 1 move : '), nl.
 
-displayPlayer(pc2):-
+displayPlayer('pc2'):-
     write('Pc 2 move : '), nl.
+
+display_pieces:-
+    piece_coordinates(piece1, [P1, P12]),
+    piece_coordinates(piece2, [P2, P22]),
+    piece_coordinates(piece3, [P3, P32]),
+    piece_coordinates(piece4, [P4, P42]),nl,
+    write(' Piece 1 -> '), display_cells(P1), 
+    write(' Piece 2 -> '), display_cells(P2), 
+    write(' Piece 3 -> '), display_cells(P3), 
+    write(' Piece 4 -> '), display_cells(P4),nl,
+    write('            '), display_cells(P12),
+    write('            '), display_cells(P22),
+    write('            '), display_cells(P32),
+    write('            '), display_cells(P42),nl.
+
 
 display_game([Player, Board]):-
     display_board(Board), nl,
