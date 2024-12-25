@@ -100,13 +100,13 @@ play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer]) :-
         format("~w venceu o jogo!~n", [Winner])  
     ;
         % Continue the game in case of no winner
-        random_move(Board, N, X,Y, L),
+        random_move(Board, N, X, Y, L),
         piece_from_number(N, Piece),
         move([Player, Board, L, OtherPlayer], [Piece, Y, X], NewState),
         play_turn('PcVsPc', NewState)
     ).
 
-is_valid(N, X,Y,Level, true).
+is_valid(N, X, Y, Level, true).
 valid_moves(Board, Moves) :-
     findall([N, X, Y, Level], (
         generate_coordinates(1, 4, N),
