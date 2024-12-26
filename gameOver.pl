@@ -61,7 +61,8 @@ dfs(Board, [Col, Row], Visited, Color, Success) :-
     ),
     Success = true. % in case of any Success
 
-game_over([Player, [FirstLine|Board]], Winner) :-
+game_over([Player, [FirstLine|Board], 0], 'T').
+game_over([Player, [FirstLine|Board], MovesPlayed], Winner) :-
     process_line([FirstLine|Board], 10, FirstLine, 1, 'W', WhiteWins),
     process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B', BlackWins),
     ( WhiteWins, BlackWins -> Winner = 'T'   % Ambos venceram

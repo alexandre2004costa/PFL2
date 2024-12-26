@@ -44,23 +44,23 @@ last([Elem|Rest], X): last(Rest, X).
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Isto parece-me estranho, parece que não está a fazer nada -> Acredita que está
-initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer]).
+initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]).
 
 play :- state(initial).
 
-choose_players('PlayerVsPlayer', [p1,p2]).
-choose_players('PlayerVsPc', [p1,pc1]).
-choose_players('PcVsPc', [pc1,pc2]).
+choose_players('PlayerVsPlayer', ['p1','p2']).
+choose_players('PlayerVsPc', ['p1','pc1']).
+choose_players('PcVsPc', ['pc1','pc2']).
 
 play_game(Mode):-
     board(B), levels(L),
     choose_players(Mode, Players),
-    initial_state(Players, [P1, B, L, P2]),
-    play_turn(Mode, [P1, B, L, P2]).
+    initial_state(Players, [P1, B, L, P2, MovesLeft]),
+    play_turn(Mode, [P1, B, L, P2, MovesLeft]).
 
-play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer]) :-
+play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft]) :-
     display_game([Player, Board]),  
-    game_over([Player, Board], Winner),  
+    game_over([Player, Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
     ;   
@@ -70,13 +70,13 @@ play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer]) :-
         % Continue the game in case of no winner
         read_input(N,X,Y, Levels),
         piece_from_number(N, Piece),
-        move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
+        move([Player, Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
         play_turn('PlayerVsPlayer', NewState)
     ).
 
-play_turn('PlayerVsPc', [Player, Board, Levels, OtherPlayer]) :-
-    display_game([Player, Board]),  
-    game_over([Player, Board], Winner),  
+play_turn('PlayerVsPc', ['p1', Board, Levels, OtherPlayer, MovesLeft]) :-
+    display_game(['p1', Board]),  
+    game_over(['p1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
     ;   
@@ -86,13 +86,13 @@ play_turn('PlayerVsPc', [Player, Board, Levels, OtherPlayer]) :-
         % Continue the game in case of no winner
         read_input(N,X,Y, Levels),
         piece_from_number(N, Piece),
-        move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], NewState),
+        move(['p1', Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
         play_turn('PlayerVsPc', NewState)
     ).
 
-play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer]) :-
-    display_game([Player, Board]),  
-    game_over([Player, Board], Winner),  
+play_turn('PlayerVsPc', ['pc1', Board, Levels, OtherPlayer, MovesLeft]) :-
+    display_game(['pc1', Board]),  
+    game_over(['pc1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
     ;   
@@ -100,20 +100,34 @@ play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer]) :-
         format("~w venceu o jogo!~n", [Winner])  
     ;
         % Continue the game in case of no winner
-        random_move(Board, N, X, Y, L),
+        random_move(Board, Levels, N, X, Y),
         piece_from_number(N, Piece),
-        move([Player, Board, L, OtherPlayer], [Piece, Y, X], NewState),
+        move(['pc1', Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
+        play_turn('PlayerVsPc', NewState)
+    ).
+
+play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft]) :-
+    display_game([Player, Board]),  
+    game_over([Player, Board, MovesLeft], Winner),  
+    ( Winner = 'T' ->                  
+        write('Game tied!')  
+    ;   
+        Winner \= none ->                  
+        format("~w venceu o jogo!~n", [Winner])  
+    ;
+        % Continue the game in case of no winner
+        random_move(Board,Levels, N, X,Y),
+        piece_from_number(N, Piece),
+        move([Player, Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], NewState),
         play_turn('PcVsPc', NewState)
     ).
 
-is_valid(N, X, Y, Level, true).
-valid_moves(Board, Moves) :-
-    findall([N, X, Y, Level], (
+valid_moves(Board, Levels, Moves) :-
+    findall([N, X, Y], (
         generate_coordinates(1, 4, N),
         generate_coordinates(1, 9, X),
         generate_coordinates(1, 9, Y),
-        Level = 1,
-        is_valid(N, X, Y, Level, true)
+        validate_coordinates(X, Y, Levels, 1)
     ), Moves).
 
 generate_coordinates(Low, High, Low) :-
@@ -127,15 +141,12 @@ random_index(Low, High, Index) :-
     random(X),
     Index is Low + floor(X * (High - Low)).
 
-random_move(Board, N, X, Y, Level):-
-    valid_moves(Board, Moves),
-    length(Moves, Size),      
-    Size > 0,                  
-    random(0, Size, Index),
-    get_value_in_row(Moves, Index, [N, X, Y, Level]).
-
+random_move(Board, Levels, N, X, Y):-
+    valid_moves(Board, Levels, Moves),
+    random_member([N, X, Y], Moves).
 
 read_input(N, X, Y, Levels) :-
+    display_pieces,
     write('Choose the type of block (1-4): '),
     validate_input_type(N), nl,
     read_input_coordinates(X, Y, Levels), nl.
@@ -181,11 +192,16 @@ validate_coordinates(X, Y, Levels, Valid) :-
     BoardX2 is BoardX+2, BoardY2 is BoardY-1,
 
     1 is X mod 2, 1 is BoardY mod 2, 
-    get_value(Levels, BoardY, BoardX, Level_LD), write( Level_LD), nl, Level_LD is 0,
-    get_value(Levels, BoardY, BoardX2, Level_LT), write( Level_LT), nl, Level_LT is 0,
-    get_value(Levels, BoardY2, BoardX, Level_RD), write( Level_RD), nl, Level_RD is 0,
-    get_value(Levels, BoardY2, BoardX2, Level_RT), write( Level_RT), nl, Level_RT is 0,
-    write('Level 0.'), nl, nl, Valid is 1.
+    get_value(Levels, BoardY, BoardX, Level_LD), %write( Level_LD), nl, 
+    Level_LD is 0,
+    get_value(Levels, BoardY, BoardX2, Level_LT), %write( Level_LT), nl, 
+    Level_LT is 0,
+    get_value(Levels, BoardY2, BoardX, Level_RD), %write( Level_RD), nl, 
+    Level_RD is 0,
+    get_value(Levels, BoardY2, BoardX2, Level_RT), %write( Level_RT), nl, 
+    Level_RT is 0,
+    %write('Level 0.'), nl, nl, 
+    Valid is 1.
 
 validate_coordinates(X, Y, Levels, Valid) :-
     BoardX is 1+(X-1)*2, BoardY is 10 - Y,
@@ -199,13 +215,14 @@ validate_coordinates(X, Y, Levels, Valid) :-
 
     ((0 is L1 mod 2, 1 is X mod 2, 1 is Y mod 2) ; (1 is L1 mod 2, 0 is X mod 2, 0 is Y mod 2)),
 
-    write('Above levels.'), nl, nl, Valid is 1.
+    %write('Above levels.'), nl, nl, 
+    Valid is 1.
 
 validate_coordinates(X, Y, Levels, Valid) :-
     Valid is 0.
 
-
-move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player]):-
+move([Player, Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player, Moves1]):-
+    Moves1 is MovesLeft-1,
     NewX is 1+(X-1)*2, NewY is 10 - Y, 
     % Update board
     piece_coordinates(Piece, PieceConfig), 
@@ -226,17 +243,16 @@ move([Player, Board, Levels, OtherPlayer], [Piece, Y, X], [OtherPlayer, Board8, 
     update_piece(Board4, NewY+1, NewX, V4, Board5),
     update_piece(Board5, NewY+1, NewX+1, V5, Board6),
     update_piece(Board6, NewY+1, NewX+2, V6, Board7),
-    update_piece(Board7, NewY+1, NewX+3, V7, Board8).
+    update_piece(Board7, NewY+1, NewX+3, V7, Board8),
 
     % Update levels
-    %get_value(Levels, NewY, NewX, Level), NewLevel is Level+1,
-    %update_piece(Levels, NewY, NewX, NewLevel, Levels1),
-    %update_piece(Levels1, NewY, NewX+1, NewLevel, Levels2),
-    %update_piece(Levels2, NewY, NewX+2, NewLevel, Levels3),
-    %update_piece(Levels3, NewY, NewX+3, NewLevel, Levels4),
-    %update_piece(Levels4, NewY+1, NewX, NewLevel, Levels5),
-    %update_piece(Levels5, NewY+1, NewX+1, NewLevel, Levels6),
-    %update_piece(Levels6, NewY+1, NewX+2, NewLevel, Levels7),
-    %update_piece(Levels7, NewY+1, NewX+3, NewLevel, Levels8),
-    %write('Uawdpdated'), nl.
+    get_value(Levels, NewY, NewX, Level), NewLevel is Level+1,
 
+    update_piece(Levels, NewY, NewX, NewLevel, Levels1),
+    update_piece(Levels1, NewY, NewX+1, NewLevel, Levels2),
+    update_piece(Levels2, NewY, NewX+2, NewLevel, Levels3),
+    update_piece(Levels3, NewY, NewX+3, NewLevel, Levels4),
+    update_piece(Levels4, NewY+1, NewX, NewLevel, Levels5),
+    update_piece(Levels5, NewY+1, NewX+1, NewLevel, Levels6),
+    update_piece(Levels6, NewY+1, NewX+2, NewLevel, Levels7),
+    update_piece(Levels7, NewY+1, NewX+3, NewLevel, Levels8).
