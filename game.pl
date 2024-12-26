@@ -138,7 +138,7 @@ play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
         format("~w venceu o jogo!~n", [Winner])  
     ;
         % Continue the game in case of no winner
-        read_input(N,X,Y, Levels),
+        read_input(N,X,Y, Levels, Color1, Color2),
         move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
         play_turn('PlayerVsPc_2', NewState)
     ).
@@ -339,18 +339,18 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move):-
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move):- !.
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], BestMove) :-
-    move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
+    move2([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
     value(NewGameState, Value),
 
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, OtherMove),
-    move([Player, Board, Levels, OtherPlayer, MovesLeft], OtherMove, OtherGameState),
+    move2([Player, Board, Levels, OtherPlayer, MovesLeft], OtherMove, OtherGameState),
     value(OtherGameState, OtherValue),
 
     (Value > OtherValue -> BestMove = Move; BestMove = OtherMove).
 
 
 
-move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player, Moves1, Color1, Color2]):-
+move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], [OtherPlayer, Board8, Levels8, Player, Moves1, Color1, Color2]):-
     Moves1 is MovesLeft-1,
     NewX is 1+(X-1)*2, NewY is 10 - Y,
 
