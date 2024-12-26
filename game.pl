@@ -1,4 +1,5 @@
 :- use_module(library(random)).
+:- use_module(library(lists)).
 :- consult(gameOver). 
 :- consult(board). 
 :- consult(display). 
@@ -39,11 +40,8 @@ transition(mode, 4, initial).
 transition(_, _, initial). 
 
 
-last([X], X).
-last([Elem|Rest], X): last(Rest, X).
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Isto parece-me estranho, parece que não está a fazer nada -> Acredita que está
 initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]).
 
 play :- state(initial).
@@ -122,29 +120,8 @@ play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft]) :-
         play_turn('PcVsPc', NewState)
     ).
 
-valid_moves(Board, Levels, Moves) :-
-    findall([N, X, Y], (
-        generate_coordinates(1, 4, N),
-        generate_coordinates(1, 9, X),
-        generate_coordinates(1, 9, Y),
-        validate_coordinates(X, Y, Levels, 1)
-    ), Moves).
 
-generate_coordinates(Low, High, Low) :-
-    Low =< High.
-generate_coordinates(Low, High, Value) :-
-    Low < High,
-    Next is Low + 1,
-    generate_coordinates(Next, High, Value).
-
-random_index(Low, High, Index) :-
-    random(X),
-    Index is Low + floor(X * (High - Low)).
-
-random_move(Board, Levels, N, X, Y):-
-    valid_moves(Board, Levels, Moves),
-    random_member([N, X, Y], Moves).
-
+% Validate Inputs
 read_input(N, X, Y, Levels) :-
     display_pieces,
     write('Choose the type of block (1-4): '),
@@ -175,7 +152,6 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     write('The coordinates must be between 1 and 9.'), nl, nl,
     validate_coordinates(X, Y, Levels). 
 
-
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     validate_coordinates(InputX, InputY, Levels, Valid),
     ( Valid =:= 1 ->
@@ -185,6 +161,32 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
         write('Invalid coordinates. Try again.'), nl,
         read_input_coordinates(X, Y, Levels)
     ).
+
+
+% Game
+valid_moves(Board, Levels, Moves) :-
+    findall([N, X, Y], (
+        generate_coordinates(1, 4, N),
+        generate_coordinates(1, 9, X),
+        generate_coordinates(1, 9, Y),
+        validate_coordinates(X, Y, Levels, 1)
+    ), Moves).
+
+generate_coordinates(Low, High, Low) :-
+    Low =< High.
+generate_coordinates(Low, High, Value) :-
+    Low < High,
+    Next is Low + 1,
+    generate_coordinates(Next, High, Value).
+
+random_index(Low, High, Index) :-
+    random(X),
+    Index is Low + floor(X * (High - Low)).
+
+random_move(Board, Levels, N, X, Y):-
+    valid_moves(Board, Levels, Moves),
+    random_member([N, X, Y], Moves).
+
 
 
 validate_coordinates(X, Y, Levels, Valid) :-
@@ -220,6 +222,76 @@ validate_coordinates(X, Y, Levels, Valid) :-
 
 validate_coordinates(X, Y, Levels, Valid) :-
     Valid is 0.
+
+
+% Auxiliar functions
+get_first([Head| _], Head).
+remove_first([_ | Tail], Tail).
+
+% não sei se posso usar a do module list 
+transposee([], []).
+transposee([[] | _], []).
+transposee(Board, [Row | Transposed]):-
+    maplist(get_first, Board, Row),
+    maplist(remove_first, Board, RestRows),
+    transposee(RestRows, Transposed).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+count_block([], _, 0).
+count_block([Elem | Rest], Block, Count):-
+    count_block(Rest, Block, RestCount),
+    (Elem = Block -> Count is RestCount + 1 ; Count is RestCount).
+
+max_count([], _, _, CurrentMax, CurrentRow, CurrentMax, CurrentRow).
+max_count([Row | Rest], NumRow, Block, CurrentMax, CurrentRow, Max, MaxRow):-
+    count_block(Row, Block, CountRow),
+    (CountRow > CurrentMax -> NewMax = CountRow, NewMaxRow = NumRow;
+                              NewMax = CurrentMax, NewMaxRow = CurrentRow),
+    NextRow is NumRow + 1,
+    max_count(Rest, NextRow, Block, NewMax, NewMaxRow, Max, MaxRow).
+
+
+max_count_row(Board, NumRC, Block, CountRow, NumRow):-
+    max_count(Board, NumRC, Block, -1, -1, CountRow, NumRow).
+
+max_count_col(Board, NumRC, Block, CountCol, NumCol):-
+    transposee(Board, TransposedBoard),
+    max_count(TransposedBoard, NumRC, Block, -1, -1, CountCol, NumCol).
+
+
+value([Player, Board, Levels, OtherPlayer], Player, Value):-
+    NumRC is 1,
+    (Player = 'pc1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
+    max_count_row(Board, NumRC, Block, CountRowGood, NumRowGood),
+    max_count_col(Board, NumRC, Block, CountColGood, NumColGood),
+    max_count_row(Board, NumRC, OtherBlock, CountRowBad, NumRowBad),
+    max_count_col(Board, NumRC, OtherBlock, CountColBad, NumColBad),
+
+    (CountRowGood > CountColGood -> CountGood is CountRowGood; CountGood is CountColGood),
+    (CountRowBad > CountColBad -> CountBad is CountRowBad; CountBad is CountColBad),
+    (CountGood < CountBad ->  Value is CountGood/CountBad; Value is CountBad/CountGood).
+    
+
+
+choose_move([Player, Board, Levels, OtherPlayer], 2, Move):-
+    valid_moves(Board, Moves),
+    choose_best_move([Player, Board, Levels, OtherPlayer], Moves, BestMove),
+    Move is BestMove.
+
+
+choose_best_move([Player, Board, Levels, OtherPlayer], [Move], Move).
+
+choose_best_move([Player, Board, Levels, OtherPlayer], [Move|Moves], BestMove) :-
+    move([Player, Board, Levels, OtherPlayer], Move, NewGameState),
+    value(NewGameState, Player, Value),
+
+    choose_best_move([Player, Board, Levels, OtherPlayer], Moves, OtherMove),
+    move([Player, Board, Levels, OtherPlayer], OtherMove, OtherGameState),
+    value(OtherGameState, Player, OtherValue),
+
+    (Value >= OtherValue -> BestMove = Move; BestMove = OtherMove).
+
 
 move([Player, Board, Levels, OtherPlayer, MovesLeft], [Piece, Y, X], [OtherPlayer, Board8, Levels8, Player, Moves1]):-
     Moves1 is MovesLeft-1,
