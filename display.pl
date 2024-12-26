@@ -62,18 +62,19 @@ print_numbers(N):-
     write(N), write(' '), 
     N2 is N+1, print_numbers(N2).
 
+%level_color(1, Row, Color1, Color2, Color1).
 
-level_color(Ratio, Row, Color1, Color2, Color1):-
-    RatioNorm is Ratio * 12, % 12 is the number of rows of the bar
+level_color(Ratio, Row, Color1, Color2, Color1) :-
+    RatioNorm is round(Ratio * 12), % Normalization 
     Row =< RatioNorm.
 
-level_color(Ratio, Row, Color1, Color2, Color2):-
-    RatioNorm is Ratio * 12, % 12 is the number of rows of the bar
-    Row >= RatioNorm.
+level_color(Ratio, Row, Color1, Color2, Color2) :-
+    RatioNorm is round(Ratio * 12), % Normalization
+    Row > RatioNorm.
 
 display_board([], Color1, Color2) :- !.
 display_board([Row | Rest], Color1, Color2) :-
-    Ratio is 1,
+    Ratio is 0.5,
     level_color(Ratio, 12, Color1, Color2, ColorRow1),
     level_color(Ratio, 1, Color1, Color2, ColorRow12),
     length(Row, Length), Len is Length + 6, RowsLen is 11, N is 1, 
@@ -99,7 +100,8 @@ display_board_rows([Row | Rest], RowsLen, Color1, Color2, Ratio) :-
     display_board_rows(Rest, RowNumber, Color1, Color2, Ratio).  % Exibe as linhas restantes
 
 display_row(Row, RowNumber, Color1, Color2, Ratio) :-
-    level_color(Ratio, RowNumber, Color1, Color2, ColorRow),
+    RowNumber1 is RowNumber+1,
+    level_color(Ratio, RowNumber1, Color1, Color2, ColorRow),
     RowNumber < 10,
     write(RowNumber), put_code_color(0x2502, white), write(' '), put_code_color(0x2592, Color2), put_code_color(0x2592, Color2),           % Começa com uma borda lateral
     display_cells(Row, Color1, Color2),   % Exibe as células da linha
@@ -108,7 +110,8 @@ display_row(Row, RowNumber, Color1, Color2, Ratio) :-
     put_code_color(0x2502, bold_cyan), nl.       % Fecha com uma borda lateral e pula linha
 
 display_row(Row, RowNumber, Color1, Color2, Ratio) :-
-    level_color(Ratio, RowNumber, Color1, Color2, ColorRow),
+    RowNumber1 is RowNumber+1,
+    level_color(Ratio, RowNumber1, Color1, Color2, ColorRow),
     write(' '), put_code_color(0x2502 , white), write(' '), put_code_color(0x2592 , Color2), put_code_color(0x2592, Color2),           % Começa com uma borda lateral
     display_cells(Row, Color1, Color2),   % Exibe as células da linha
     put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),      % Fecha com uma borda lateral e pula linha
