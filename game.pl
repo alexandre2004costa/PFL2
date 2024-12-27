@@ -83,7 +83,8 @@ play_game(Mode, Color1, Color2):-
     play_turn(Mode, [P1, B, L, P2, MovesLeft, Color1, Color2]).
 
 play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    display_game([Player, Board, Color1, Color2]),  
+    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    display_game([Player, Board, Color1, Color2, Ratio]),  
     game_over([Player, Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -98,7 +99,8 @@ play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Colo
     ).
 
 play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    display_game(['p1', Board, Color1, Color2]),  
+    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    display_game(['p1', Board, Color1, Color2, Ratio]),  
     game_over(['p1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -113,7 +115,8 @@ play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
     ).
 
 play_turn('PlayerVsPc_1', ['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    display_game(['pc1', Board, Color1, Color2]),  
+    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    display_game(['pc1', Board, Color1, Color2, Ratio]),  
     game_over(['pc1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -129,7 +132,8 @@ play_turn('PlayerVsPc_1', ['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1,
     ).
 
 play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    display_game(['p1', Board, Color1, Color2]),  
+    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    display_game(['p1', Board, Color1, Color2, Ratio]),  
     game_over(['p1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -144,7 +148,8 @@ play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
     ).
 
 play_turn('PlayerVsPc_2', ['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    display_game(['pc1', Board, Color1, Color2]),  
+    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    display_game(['pc1', Board, Color1, Color2, Ratio]),  
     game_over(['pc1', Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -155,13 +160,14 @@ play_turn('PlayerVsPc_2', ['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1,
         % Continue the game in case of no winner
         Board2 = Board,
         choose_move([Player, Board2, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]),
-        move(['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
+        move(['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn('PlayerVsPc_2', NewState)
     ).
 
 
 play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    display_game([Player, Board, Color1, Color2]),  
+    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    display_game([Player, Board, Color1, Color2, Ratio]),  
     game_over([Player, Board, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -319,34 +325,38 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
 value([Player, Board, Levels, OtherPlayer, MovesLeft], Value):-
     NumRC is 1,
     (Player = 'pc1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
-    max_count_row(Board, NumRC, Block, CountRowGood, NumRowGood),
+    %max_count_row(Board, NumRC, Block, CountRowGood, NumRowGood),
     max_count_col(Board, NumRC, Block, CountColGood, NumColGood),
     max_count_row(Board, NumRC, OtherBlock, CountRowBad, NumRowBad),
-    max_count_col(Board, NumRC, OtherBlock, CountColBad, NumColBad),
+    %max_count_col(Board, NumRC, OtherBlock, CountColBad, NumColBad),
+    CountRowBad2 is CountRowBad // 2,
+    TotalCount is CountColGood + CountRowBad2,
+    Value is CountColGood / TotalCount.
 
-    (CountRowGood > CountColGood -> CountGood is CountRowGood; CountGood is CountColGood),
-    (CountRowBad > CountColBad -> CountBad is CountRowBad; CountBad is CountColBad),
-    (CountGood < CountBad ->  Value is CountGood/CountBad; Value is CountBad/CountGood).
+    %(CountRowGood > CountColGood -> CountGood is CountRowGood; CountGood is CountColGood),
+    %(CountRowBad > CountColBad -> CountBad is CountRowBad; CountBad is CountColBad),
+    %(CountGood < CountBad ->  Value is CountGood/CountBad; Value is CountBad/CountGood).
     
 
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move):-
     valid_moves(Board, Levels, Moves),
-    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove),
-    Move = BestMove.
+    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, Move).
 
-
-choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move):- !.
+choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move).
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], BestMove) :-
     move2([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
     value(NewGameState, Value),
-
+    write(Value),
+    write(Move),
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, OtherMove),
     move2([Player, Board, Levels, OtherPlayer, MovesLeft], OtherMove, OtherGameState),
     value(OtherGameState, OtherValue),
-
-    (Value > OtherValue -> BestMove = Move; BestMove = OtherMove).
+    write('!!'),
+    write(OtherValue),
+    write(OtherMove),
+    (Value < OtherValue -> BestMove = Move; BestMove = OtherMove).
 
 
 
