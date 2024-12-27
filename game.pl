@@ -5,18 +5,22 @@
 :- consult(display). 
 :- consult(colors).
 
+% Validate
+read_option(Option, N) :-
+    write('Option: '), nl,
+    read(Input),
+    (integer(Input), Input > 0, Input =< N -> Option is Input, nl; write('Invalid input. '), read_option(Option, N)).
+
 % Menu
 state(initial, Color1, Color2) :-
     print_banner(menu), 
-    write('Option: '), nl,
-    read(Input),
-    transition(initial, Input, NextState), 
+    read_option(Option, 3),
+    transition(initial, Option, NextState), 
     state(NextState, Color1, Color2). 
 
 state(mode, Color1, Color2) :-
     print_banner(play),  
-    write('Option: '), nl,
-    read(Input),
+    read_option(Option, 3),
     transition(mode, Input, NextState), 
     state(NextState, Color1, Color2). 
 
@@ -24,18 +28,17 @@ state(colors, Color1, Color2):-
     print_banner(colors, 1),
     print_banner(colors, 2),  
     read_input_colors(Color11, Color22),
-    display_code('S', Color11),
-    display_code('S', Color22),
-    state(initial, Color11, Color22). 
+    print_banner(display_colors, Color11, Color22),
+    state(initial, Color11, Color22).
 
 
 state(play_uu, Color1, Color2) :-
+    %print_banner(play, )
     play_game('PlayerVsPlayer', Color1, Color2).
 
 state(play_uc, Color1, Color2) :-
     print_banner(level, 0),
-    write('Option: '), nl,
-    read(Input),
+    read_option(Option, 2),
     transition(play_uc, Input, NextState), 
     state(NextState, Color1, Color2).
 state(level_1, Color1, Color2) :-
@@ -46,8 +49,9 @@ state(level_2, Color1, Color2) :-
 state(play_cc, Color1, Color2) :-
     play_game('PcVsPc', Color1, Color2).
 
-state(exit) :-
-    write('Exiting...'), nl. 
+state(exit, Color1, Color2) :-
+    write('Exiting...'), nl, nl. 
+
 
 transition(initial, 1, mode).  
 transition(initial, 2, colors).  
@@ -69,7 +73,7 @@ transition(_, _, initial).
 
 initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]).
 
-play :- state(initial, red, blue).
+play :- state(initial, white, white).
 
 choose_players('PlayerVsPlayer', ['p1','p2']).
 choose_players('PlayerVsPc_1', ['p1','pc1']).
