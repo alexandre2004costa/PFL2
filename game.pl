@@ -88,7 +88,7 @@ play_game(Mode, Color1, Color2):-
 
 play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game([Player, Board, Color1, Color2, Ratio]),  
+    display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -104,7 +104,7 @@ play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Colo
 
 play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p1', Board, Color1, Color2, Ratio]),  
+    display_game(['p1', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p1', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -120,7 +120,7 @@ play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 play_turn('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p2', Board, Color1, Color2, Ratio]),  
+    display_game(['p2', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p2', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -137,7 +137,7 @@ play_turn('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value(['p1', Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p1', Board, Color1, Color2, Ratio]),  
+    display_game(['p1', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p1', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -153,7 +153,7 @@ play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 play_turn('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value(['p2', Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p2', Board, Color1, Color2, Ratio]),  
+    display_game(['p2', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p2', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -171,7 +171,7 @@ play_turn('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game([Player, Board, Color1, Color2, Ratio]),  
+    display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  

@@ -139,7 +139,7 @@ print_banner(display_colors, Color1, Color2):-
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 
-% Auxiliar
+% Auxiliar functions
 print_numbers(10):- !.
 print_numbers(N):-
     write(N), write(' '), 
@@ -155,60 +155,86 @@ level_color(Ratio, Row, Color1, Color2, Color2) :-
 
 
 % Board
-display_board([], Color1, Color2, Ratio) :- !.
-display_board([Row | Rest], Color1, Color2, Ratio) :-
+display_board([], _, Color1, Color2, Ratio) :- !.
+display_board([Row | Rest], Levels, Color1, Color2, Ratio) :-
     level_color(Ratio, 12, Color1, Color2, ColorRow1),
     level_color(Ratio, 1, Color1, Color2, ColorRow12),
 
     length(Row, Length), Len is Length + 6, RowsLen is 11, N is 1, 
     print_n(5,' '), put_code_color(0x250C, white), print_n_code(Len, 0x2500, white), put_code_color(0x2510, white),
-    print_n(5,' '), put_code_color(0x250C, bold_cyan), print_n_code(2, 0x2500, bold_cyan), put_code_color(0x2510, bold_cyan), nl,
+    print_n(5,' '), put_code_color(0x250C, bold_cyan), print_n_code(2, 0x2500, bold_cyan), put_code_color(0x2510, bold_cyan), 
+    print_n(5,' '), put_code_color(0x250C, white), print_n_code(Len, 0x2500, white), put_code_color(0x2510, white), nl,
+
+    print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588, white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white),
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, 0x2592, ColorRow1), put_code_color(0x2502, bold_cyan), 
+    print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588, white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white), nl,
+
+    display_board_rows([Row | Rest], Levels, RowsLen, Color1, Color2, Ratio),
 
     print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588,white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white),
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, 0x2592, ColorRow1), put_code_color(0x2502, bold_cyan), nl,
-
-    display_board_rows([Row | Rest], RowsLen, Color1, Color2, Ratio),
-
-    print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588,white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white),
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, 0x2592, ColorRow12), put_code_color(0x2502, bold_cyan), nl,
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, 0x2592, ColorRow12), put_code_color(0x2502, bold_cyan), 
+    print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588,white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white), nl,
 
     print_n(5,' '), put_code_color(0x2514, white), print_n_code(Len, 0x2500, white), put_code_color(0x2518, white),
-    print_n(5,' '), put_code_color(0x2514, bold_cyan), print_n_code(2, 0x2500, bold_cyan), put_code_color(0x2518, bold_cyan), nl,
-    print_n(11, ' '), print_numbers(N), nl.
+    print_n(5,' '), put_code_color(0x2514, bold_cyan), print_n_code(2, 0x2500, bold_cyan), put_code_color(0x2518, bold_cyan), 
+    print_n(5,' '), put_code_color(0x2514, white), print_n_code(Len, 0x2500, white), put_code_color(0x2518, white), nl,
+    
+    print_n(11, ' '), print_numbers(N), print_n(24, ' '), print_numbers(N), nl.
 
-display_board_rows([], _, Color1, Color2, Ratio) :- !.
-display_board_rows([Row | Rest], RowsLen, Color1, Color2, Ratio) :-
+
+display_board_rows([], _, _, Color1, Color2, Ratio) :- !.
+display_board_rows([Row | Rest], [RowLevel | RestLevel], RowsLen, Color1, Color2, Ratio) :-
     RowNumber is RowsLen-1,
-    display_row(Row, RowNumber, Color1, Color2, Ratio),     % Exibe a linha atual
-    display_board_rows(Rest, RowNumber, Color1, Color2, Ratio).  % Exibe as linhas restantes
+    display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio),
+    display_board_rows(Rest, RestLevel, RowNumber, Color1, Color2, Ratio).
 
-display_row(Row, RowNumber, Color1, Color2, Ratio) :-
-    RowNumber1 is RowNumber+1,
-    level_color(Ratio, RowNumber1, Color1, Color2, ColorRow),
+display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
+    RowNumber1 is RowNumber+1, level_color(Ratio, RowNumber1, Color1, Color2, ColorRow),
     RowNumber < 10,
-    print_n(3,' '), write(RowNumber), write(' '), put_code_color(0x2502, white), write(' '), put_code_color(0x2592, Color2), put_code_color(0x2592, Color2),           % Começa com uma borda lateral
-    display_cells(Row, Color1, Color2),   % Exibe as células da linha
-    put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(0x2592, ColorRow), put_code_color(0x2592, ColorRow),           % Começa com uma borda lateral
-    put_code_color(0x2502, bold_cyan), nl.       % Fecha com uma borda lateral e pula linha
 
-display_row(Row, RowNumber, Color1, Color2, Ratio) :-
+    % Board 
+    print_n(3,' '), write(RowNumber), write(' '), put_code_color(0x2502, white), write(' '), put_code_color(0x2592, Color2), put_code_color(0x2592, Color2),
+    display_cells(Row, Color1, Color2),   % Display row cells of board
+    put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
+
+    % Elo Bar
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(0x2592, ColorRow), put_code_color(0x2592, ColorRow), put_code_color(0x2502, bold_cyan), 
+    
+    % Levels
+    print_n(3,' '), write(RowNumber), write(' '), put_code_color(0x2502, white), write(' '), put_code_color(0x2592, Color2), put_code_color(0x2592, Color2),
+    display_levels(RowLevel),
+    put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
+    nl.
+
+display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
     RowNumber1 is RowNumber+1,
     level_color(Ratio, RowNumber1, Color1, Color2, ColorRow),
-    print_n(5,' '), put_code_color(0x2502 , white), write(' '), put_code_color(0x2592 , Color2), put_code_color(0x2592, Color2),           % Começa com uma borda lateral
-    display_cells(Row, Color1, Color2),   % Exibe as células da linha
-    put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),      % Fecha com uma borda lateral e pula linha
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(0x2592, ColorRow), put_code_color(0x2592, ColorRow),           % Começa com uma borda lateral
-    put_code_color(0x2502, bold_cyan), nl.
 
-display_cells([], Color1, Color2) :- !.   % Caso base: nada para exibir
+    % Board
+    print_n(5,' '), put_code_color(0x2502 , white), write(' '), put_code_color(0x2592 , Color2), put_code_color(0x2592, Color2),
+    display_cells(Row, Color1, Color2),
+    put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
+
+    % Elo Bar 
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(0x2592, ColorRow), put_code_color(0x2592, ColorRow), put_code_color(0x2502, bold_cyan), 
+
+    % Levels
+    print_n(5,' '), put_code_color(0x2502 , white), write(' '), put_code_color(0x2592 , Color2), put_code_color(0x2592, Color2),
+    display_levels(RowLevel),
+    put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
+    nl.
+
+display_cells([], Color1, Color2) :- !.
 display_cells([Cell | Rest], Color1, Color2) :-
     display_code(Cell, Color1, Color2),
-    display_cells(Rest, Color1, Color2).     % Continua exibindo as células restantes
+    display_cells(Rest, Color1, Color2).
 
 display_code('S',Color1, Color2):- put_code_color(0x2588, white).
 display_code('W',Color1, Color2):- put_code_color(0x2593, Color1).
 display_code('B',Color1, Color2):- put_code_color(0x2592, Color2).
+
+display_levels([]) :- !.
+display_levels([Cell | Rest]) :- write(Cell), display_levels(Rest).
 
 
 displayPlayer('p1'):-
@@ -238,6 +264,6 @@ display_pieces(Color1, Color2):-
     write('           '), display_cells(P42,Color1, Color2), nl, nl.
 
 
-display_game([Player, Board, Color1, Color2, Ratio]):-
-    display_board(Board, Color1, Color2, Ratio), nl,
+display_game([Player, Board, Levels, Color1, Color2, Ratio]):-
+    display_board(Board, Levels, Color1, Color2, Ratio), nl,
     displayPlayer(Player).
