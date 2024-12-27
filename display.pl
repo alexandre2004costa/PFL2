@@ -70,43 +70,62 @@ print_banner(menu):-
     write(' '), line(1, Symbol, Size), 
     write(' '), print_title,
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1-> Play', Symbol, Size),
+    write(' '), word('1 -> Play', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     %word('2-> Instructions', Symbol, Size),
     %line(1, Symbol, Size),
-    write(' '), word('2-> Configurations', Symbol, Size),
+    write(' '), word('2 -> Configurations', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('3-> Exit', Symbol, Size),
+    write(' '), word('3 -> Exit', Symbol, Size),
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl. 
 
-print_bannerPlay(Size, Symbol):-
-    print_n(Size, Symbol), nl,  
-    line(1, Symbol, Size),  
-    word('Blinq', Symbol, Size),
-    line(2, Symbol, Size),  
-    word('1-> user vs user', Symbol, Size),
-    line(1, Symbol, Size), 
-    word('2-> user vs pc', Symbol, Size),
-    line(1, Symbol, Size), 
-    word('3-> pc vs pc', Symbol, Size),
-    line(1, Symbol, Size), 
-    word('4-> back', Symbol, Size),
-    line(1, Symbol, Size), 
-    print_n(Size, Symbol), nl.
+print_banner(play):-
+    Size is 60, Symbol = 0x2551,
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('Mode', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1 -> User vs User', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('2 -> User vs Pc', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('3 -> Pc vs Pc', Symbol, Size),
+    write(' '), line(1, Symbol, Size),
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_bannerColors(Size, Symbol):-
-    print_n(Size, Symbol),  
-    line(1, Symbol, Size),  
-    write_color('1 -> ', red), display_code('B', red), display_code('W', red),nl,  
-    write_color('2 -> ', green), display_code('B', green), display_code('W', green),nl, 
-    write_color('3 -> ',yellow ), display_code('B', yellow), display_code('W', yellow),nl, 
-    write_color('4 -> ',blue ), display_code('B', blue), display_code('W', blue),nl, 
-    write_color('5 -> ',magenta ), display_code('B', magenta), display_code('W', magenta),nl, 
-    write_color('6 -> ',cyan ), display_code('B', cyan), display_code('W', cyan),nl,
-    write_color('7 -> ',white ), display_code('B', white), display_code('W', white),nl,
-    write_color('8 -> ',bold_cyan ), display_code('B', bold_cyan), display_code('W', bold_cyan),nl,reset_color,
-    print_n(Size, Symbol),nl.
+print_banner(level, N):-
+    Size is 60, Symbol = 0x2551, 
+    (N = 0 -> Title = 'PC - AI Level'; N = 1 -> Title = 'Pc 1 - AI Level'; N = 2 -> Title = 'Pc 2 - AI Level'),
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word(Title, Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1 -> Level 1', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('2 -> Level 2', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
+print_banner(colors, N):-
+    Size is 60, Symbol = 0x2551,
+    (N = 1 -> Title = 'Colors for Player 1', Letter = 'W'; N = 2 -> Title = 'Colors for Player 2', Letter = 'B'),
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word(Title, Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), put_code_color(0x2551, white), print_n(3, ' '),
+        write_color('1 -> ', red), display_code(Letter, red), print_n(2, ' '),
+        write_color('2 -> ', green), display_code(Letter, green), print_n(2, ' '),
+        write_color('3 -> ',yellow ), display_code(Letter, yellow), print_n(2, ' '),
+        write_color('4 -> ',blue ), display_code(Letter, blue), print_n(2, ' '), 
+        write_color('5 -> ',magenta ), display_code(Letter, magenta), print_n(2, ' '),
+        write_color('6 -> ',cyan ), display_code(Letter, cyan), print_n(2, ' '),
+        write_color('7 -> ',white ), display_code(Letter, white), print_n(2, ' '),
+        reset_color, print_n(1, ' '), put_code_color(0x2551, white), nl,
+    write(' '), line(1, Symbol, Size),
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
 
 print_numbers(10):- !.
 print_numbers(N):-

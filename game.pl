@@ -14,14 +14,15 @@ state(initial, Color1, Color2) :-
     state(NextState, Color1, Color2). 
 
 state(mode, Color1, Color2) :-
-    print_bannerPlay(30, '0'),  
+    print_banner(play),  
     write('Option: '), nl,
     read(Input),
     transition(mode, Input, NextState), 
     state(NextState, Color1, Color2). 
 
 state(colors, Color1, Color2):-
-    print_bannerColors(30, '0'),  
+    print_banner(colors, 1),
+    print_banner(colors, 2),  
     read_input_colors(Color11, Color22),
     display_code('S', Color11),
     display_code('S', Color22),
@@ -31,13 +32,12 @@ state(colors, Color1, Color2):-
 state(play_uu, Color1, Color2) :-
     play_game('PlayerVsPlayer', Color1, Color2).
 
-
 state(play_uc, Color1, Color2) :-
-    %FALTA PRINT BANNER
+    print_banner(level, 0),
     write('Option: '), nl,
     read(Input),
     transition(play_uc, Input, NextState), 
-    state(NextState, Color1, Color2). 
+    state(NextState, Color1, Color2).
 state(level_1, Color1, Color2) :-
     play_game('PlayerVsPc_1', Color1, Color2).
 state(level_2, Color1, Color2) :-
