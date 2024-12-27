@@ -7,7 +7,7 @@
 
 % Menu
 state(initial, Color1, Color2) :-
-    print_banner(30, '0'),  
+    print_banner(menu), 
     write('Option: '), nl,
     read(Input),
     transition(initial, Input, NextState), 

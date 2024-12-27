@@ -1,33 +1,84 @@
+% Symbol               - Code
+% Left Top Corner      - 0x250C
+% Right Top Corner     - 0x2510
+% Left Bottom Corner   - 0x2514
+% Right Bottom Corner  - 0x2518
+% Horizontal line      - 0x2500
+% Vertical line        - 0x2502
+ 
 
-%Printing
+% Printing
 print_n(0,S):-!.
 print_n(N,S):- N1 is N-1, print_n(N1, S), put_char(S).
 
 print_n_code(0,S, Color):-!.
-print_n_code(N,S, Color):- N1 is N-1, print_n_code(N1, S, Color), put_code_color(S, Color).
-
-
+print_n_code(N, S, Color):- N1 is N-1, print_n_code(N1, S, Color), put_code_color(S, Color).
 
 line(0,S,P):-!.
-line(X,S,P):- X1 is X-1, put_char(S), print_n(P-2,' '), put_char(S), nl,  line(X1,S,P).
+line(X,S,P):- X1 is X-1, put_code_color(S, white), print_n(P,' '), put_code_color(S, white), nl, line(X1,S,P).
 
-word(Text, Symbol, Size) :- atom_length(Text, TextSize), Padding is (Size - TextSize - 2) // 2, 
-    PaddingRight is Size - TextSize - 2 - Padding, 
-    put_char(Symbol), print_n(Padding, ' '), write(Text), print_n(PaddingRight, ' '), put_char(Symbol), nl.
+word(Text, Symbol, Size) :- atom_length(Text, TextSize), 
+    Padding is (Size - TextSize - 2) // 2, PaddingRight is Size - TextSize - Padding, 
+    put_code_color(Symbol, white), print_n(Padding, ' '), write(Text), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
 
-print_banner(Size, Symbol):-
-    print_n(Size, Symbol), nl,  
-    line(1, Symbol, Size),  
-    word('Blinq', Symbol, Size),
-    line(2, Symbol, Size),  
-    word('1-> Play', Symbol, Size),
-    line(1, Symbol, Size), 
+
+% Menu
+print_title:- 
+    % Line 1
+    put_code_color(0x2551, white), print_n(9, ' '),
+    print_n_code(6, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
+    print_n_code(3, 0x2588, white), print_n(4, ' '), print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(6, 0x2588, white), print_n(2, ' '), 
+    print_n(9, ' '), put_code_color(0x2551, white), nl,
+
+    % Line 2
+    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
+    print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), 
+    print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(4, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
+    print_n_code(2, 0x2588, white), print_n(4, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '),
+    print_n(9, ' '), put_code_color(0x2551, white), nl,
+
+    % Line 3
+    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
+    print_n_code(6, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
+    print_n_code(2, 0x2588, white), print_n(1, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
+    print_n_code(2, 0x2588, white), print_n(4, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '),
+    print_n(9, ' '), put_code_color(0x2551, white), nl,
+
+    % Line 4
+    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
+    print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), 
+    print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '), 
+    print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '), print_n_code(2, 0x2584, white), print_n(1, ' '), 
+    print_n_code(2, 0x2588, white), print_n(1, ' '),
+    print_n(9, ' '), put_code_color(0x2551, white), nl,
+
+    % Line 5
+    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
+    print_n_code(6, 0x2588, white), print_n(3, ' '), print_n_code(7, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
+    print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(4, 0x2588, white), print_n(3, ' '), print_n_code(6, 0x2588, white), print_n(2, ' '),
+    print_n(9, ' '), put_code_color(0x2551, white), nl,
+
+    % Line 6
+    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
+    print_n(37, ' '), print_n_code(5, 0x2580, white),
+    print_n(9, ' '), put_code_color(0x2551, white), nl.
+
+
+print_banner(menu):-
+    Size is 60, Symbol = 0x2551,
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), print_title,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1-> Play', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
     %word('2-> Instructions', Symbol, Size),
     %line(1, Symbol, Size),
-    word('2-> Configurations', Symbol, Size),
-    line(1, Symbol, Size), 
-    word('3-> Leave', Symbol, Size),
-    print_n(Size, Symbol), nl.  
+    write(' '), word('2-> Configurations', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('3-> Exit', Symbol, Size),
+    write(' '), line(1, Symbol, Size),
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl. 
 
 print_bannerPlay(Size, Symbol):-
     print_n(Size, Symbol), nl,  
