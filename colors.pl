@@ -10,21 +10,23 @@ display_code('W', Color) :-
     put_code(0x2593),
     reset_color.
 
-put_code_color(C, Color):-
-    color_code(Color, Code),
-    format("~s", [Code]),
-    put_code(C),
-    reset_color.
-
 display_code('B', Color) :-
     color_code(Color, Code),
     format("~s", [Code]),
     put_code(0x2592),
     reset_color.
 
+
+put_code_color(C, Color):-
+    color_code(Color, Code),
+    format("~s", [Code]),
+    put_code(C),
+    reset_color.
+
 write_color(Text, Color) :-
     color_code(Color, Code),
     format("~s~w~s", [Code, Text, "\e[0m"]).
+
 
 % basic color
 color_code(red, "\e[31m").
@@ -67,12 +69,10 @@ read_input_colors(Color1, Color2) :-
     validate_input_colors(Color2).
 
 validate_input_colors(Color) :-
-    read(InputN),             % Lê a entrada
-    (   integer(InputN),       % Verifica se é um número inteiro
-        InputN >= 1,           % Verifica se está entre 1 e 8
-        InputN =< 8,
-        number_to_color(InputN, Color) % Converte para a cor
+    read(InputN),
+    (   integer(InputN), InputN >= 1, InputN =< 8,
+        number_to_color(InputN, Color) % Convert to color
     ->  true
-    ;   write('Invalid. Choose a number between 1 and 8. '), % Caso contrário
-        validate_input_colors(Color) % Tenta novamente
+    ;   write('Invalid. Choose a number between 1 and 8. '),
+        validate_input_colors(Color)
     ).
