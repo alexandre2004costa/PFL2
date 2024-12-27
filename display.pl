@@ -72,9 +72,8 @@ level_color(Ratio, Row, Color1, Color2, Color2) :-
     RatioNorm is round(Ratio * 12), % Normalization
     Row > RatioNorm.
 
-display_board([], Color1, Color2) :- !.
-display_board([Row | Rest], Color1, Color2) :-
-    Ratio is 0.5,
+display_board([], Color1, Color2, Ratio) :- !.
+display_board([Row | Rest], Color1, Color2, Ratio) :-
     level_color(Ratio, 12, Color1, Color2, ColorRow1),
     level_color(Ratio, 1, Color1, Color2, ColorRow12),
     length(Row, Length), Len is Length + 6, RowsLen is 11, N is 1, 
@@ -155,6 +154,6 @@ display_pieces(Color1, Color2):-
     write('            '), display_cells(P42,Color1, Color2),nl.
 
 
-display_game([Player, Board, Color1, Color2]):-
-    display_board(Board, Color1, Color2), nl,
+display_game([Player, Board, Color1, Color2, Ratio]):-
+    display_board(Board, Color1, Color2, Ratio), nl,
     displayPlayer(Player).
