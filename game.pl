@@ -160,7 +160,7 @@ play_turn('PlayerVsPc_2', ['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1,
         % Continue the game in case of no winner
         Board2 = Board,
         choose_move([Player, Board2, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]),
-        move(['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
+        move(['pc1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
         play_turn('PlayerVsPc_2', NewState)
     ).
 
@@ -341,21 +341,18 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], Value):-
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move):-
     valid_moves(Board, Levels, Moves),
-    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, Move).
+    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, Move),
+    nl, write(Move), nl.
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move).
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], BestMove) :-
     move2([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
     value(NewGameState, Value),
-    write(Value),
-    write(Move),
+    write(Move), write(Value),
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, OtherMove),
     move2([Player, Board, Levels, OtherPlayer, MovesLeft], OtherMove, OtherGameState),
     value(OtherGameState, OtherValue),
-    write('!!'),
-    write(OtherValue),
-    write(OtherMove),
     (Value < OtherValue -> BestMove = Move; BestMove = OtherMove).
 
 
@@ -399,7 +396,7 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X],
     update_piece(Levels7, NewY+1, NewX+3, NewLevel, Levels8).
 
 
-move2([Player, Board, Levels, OtherPlayer, MovesLeft], [N, Y, X], [OtherPlayer, Board8, Levels8, Player, Moves1]):-
+move2([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], [OtherPlayer, Board8, Levels8, Player, Moves1]):-
     Moves1 is MovesLeft-1,
     NewX is 1+(X-1)*2, NewY is 10 - Y,
 
