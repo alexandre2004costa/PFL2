@@ -93,7 +93,7 @@ play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Colo
     ;
         % Continue the game in case of no winner
         read_input(N,X,Y, Levels, Color1, Color2),
-        move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
+        move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn('PlayerVsPlayer', NewState)
     ).
 
@@ -109,7 +109,7 @@ play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
     ;
         % Continue the game in case of no winner
         read_input(N,X,Y, Levels, Color1, Color2),
-        move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
+        move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn('PlayerVsPc_1', NewState)
     ).
 
@@ -126,7 +126,7 @@ play_turn('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
         % Continue the game in case of no winner
 
         random_move(Board, Levels, N, X, Y),
-        move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
+        move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn('PlayerVsPc_1', NewState)
     ).
 
@@ -142,7 +142,7 @@ play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
     ;
         % Continue the game in case of no winner
         read_input(N,X,Y, Levels, Color1, Color2),
-        move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
+        move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn('PlayerVsPc_2', NewState)
     ).
 
@@ -159,7 +159,7 @@ play_turn('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
         % Continue the game in case of no winner
         Board2 = Board,
         choose_move(['p2', Board2, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]),
-        move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
+        move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn('PlayerVsPc_2', NewState)
     ).
 
@@ -176,7 +176,7 @@ play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Colo
     ;
         % Continue the game in case of no winner
         random_move(Board,Levels, N, X, Y),
-        move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
+        move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn('PcVsPc', NewState)
     ).
 
@@ -257,24 +257,20 @@ random_move(Board, Levels, N, X, Y):-
 
 
 validate_coordinates(X, Y, Levels, Valid) :-
-    BoardX is 1+(X-1)*2, BoardY is 10 - Y, 
-    BoardX2 is BoardX+2, BoardY2 is BoardY-1,
+    BoardX is X-1, BoardY is 10 - Y, 
+    BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     1 is X mod 2, 1 is BoardY mod 2, 
-    get_value(Levels, BoardY, BoardX, Level_LD), %write( Level_LD), nl, 
-    Level_LD is 0,
-    get_value(Levels, BoardY, BoardX2, Level_LT), %write( Level_LT), nl, 
-    Level_LT is 0,
-    get_value(Levels, BoardY2, BoardX, Level_RD), %write( Level_RD), nl, 
-    Level_RD is 0,
-    get_value(Levels, BoardY2, BoardX2, Level_RT), %write( Level_RT), nl, 
-    Level_RT is 0,
+    get_value(Levels, BoardY, BoardX, Level_LD), Level_LD is 0,
+    get_value(Levels, BoardY, BoardX2, Level_LT), Level_LT is 0,
+    get_value(Levels, BoardY2, BoardX, Level_RD), Level_RD is 0,
+    get_value(Levels, BoardY2, BoardX2, Level_RT), Level_RT is 0,
     %write('Level 0.'), nl, nl, 
     Valid is 1.
 
 validate_coordinates(X, Y, Levels, Valid) :-
-    BoardX is 1+(X-1)*2, BoardY is 10 - Y,
-    BoardX2 is BoardX+2, BoardY2 is BoardY-1,
+    BoardX is X-1, BoardY is 10 - Y, 
+    BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     get_value(Levels, BoardY, BoardX, L1),
     get_value(Levels, BoardY, BoardX2, L2),
@@ -432,17 +428,17 @@ choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], 
 
 
 
-move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], [OtherPlayer, Board8, Levels8, Player, Moves1, Color1, Color2]):-
+move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, Color1, Color2]):-
     Moves1 is MovesLeft-1,
-    NewX is 1+(X-1)*2, NewY is 10 - Y,
+    NewX is X, NewY is 10 - Y,
 
     % Get block
     piece_from_number(N, Piece),
     piece_coordinates(Piece, PieceConfig), 
     get_value(PieceConfig, 0, 0, V0),
     get_value(PieceConfig, 0, 1, V1),
-    get_value(PieceConfig, 0, 2, V2),
-    get_value(PieceConfig, 0, 3, V3),
+    get_value(PieceConfig, 1, 0, V2),
+    get_value(PieceConfig, 1, 1, V3),
 
     % Update board
     get_value(Board, NewY, NewX, Value), % Para que serve isto?
@@ -468,8 +464,8 @@ check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], [OtherPla
     piece_coordinates(Piece, PieceConfig), 
     get_value(PieceConfig, 0, 0, V0),
     get_value(PieceConfig, 0, 1, V1),
-    get_value(PieceConfig, 0, 2, V2),
-    get_value(PieceConfig, 0, 3, V3),
+    get_value(PieceConfig, 1, 0, V2),
+    get_value(PieceConfig, 1, 1, V3),
 
     % Update board
     get_value(Board, NewY, NewX, Value), % Para que serve isto?
