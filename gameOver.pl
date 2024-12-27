@@ -61,12 +61,13 @@ dfs(Board, [Col, Row], Visited, Color, Success) :-
     ),
     Success = true. % in case of any Success
 
-game_over([Player, [FirstLine|Board], 0], 'T').
-game_over([Player, [FirstLine|Board], MovesPlayed], Winner) :-
+game_over([Player, [FirstLine|Board], Levels, OtherPlayer, 0],  'T'). % Maybe we need to check for win 1 last time here
+game_over([Player, [FirstLine|Board], Levels, OtherPlayer, MovesPlayed], Winner) :-
     process_line([FirstLine|Board], 10, FirstLine, 1, 'W', WhiteWins),
     process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B', BlackWins),
-    ( WhiteWins, BlackWins -> Winner = 'T'   % Ambos venceram
-    ; WhiteWins -> Winner = 'W'                % Apenas branco venceu
-    ; BlackWins -> Winner = 'B'                % Apenas preto venceu
-    ; Winner = none                            % Nenhum venceu ainda
+    (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
+    ( WhiteWins, BlackWins -> Winner = 'T'    
+    ; WhiteWins -> Winner = WhiteWinner         
+    ; BlackWins -> Winner = BlackWinner         
+    ; Winner = none                           
     ).
