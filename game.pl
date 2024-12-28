@@ -16,7 +16,7 @@ state(initial, Color1, Color2) :-
 state(mode, Color1, Color2) :-
     print_banner(play),  
     read_option(Option, 3),
-    transition(mode, Input, NextState), 
+    transition(mode, Option, NextState), 
     state(NextState, Color1, Color2). 
 
 state(colors, Color1, Color2):-
@@ -32,6 +32,7 @@ state(play_uu, Color1, Color2) :-
     play_game('PlayerVsPlayer', Color1, Color2).
 
 state(play_uc, Color1, Color2) :-
+    write('B'), nl,
     print_banner(level, 0),
     read_option(Option, 2),
     transition(play_uc, Input, NextState), 
@@ -218,7 +219,7 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     (InputX < 1; InputX > 9; InputY < 1; InputY > 9),
     write('The coordinates must be between 1 and 9.'), nl, nl,
-    validate_coordinates(X, Y, Levels). 
+    read_input_coordinates(X, Y, Levels). 
 
 validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     validate_coordinates(InputX, InputY, Levels, Valid),
@@ -460,7 +461,7 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y],
 
 check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1]):-
     Moves1 is MovesLeft-1,
-    NewX is 1+(X-1)*2, NewY is 10 - Y,
+    NewX is X, NewY is 10 - Y,
 
     % Get block
     piece_from_number(N, Piece),
