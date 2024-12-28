@@ -23,52 +23,27 @@ word(Text, Symbol, Size) :- atom_length(Text, TextSize),
 
 
 % Menu
-print_title:- 
-    % Line 1
-    put_code_color(0x2551, white), print_n(9, ' '),
-    print_n_code(6, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
-    print_n_code(3, 0x2588, white), print_n(4, ' '), print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(6, 0x2588, white), print_n(2, ' '), 
-    print_n(9, ' '), put_code_color(0x2551, white), nl,
+print_title(Size, Symbol) :- 
+    atom_codes(Atom1, [124,32,39,47,39,96,92,32,92,124,32,124,32,91,32,32,124,32,91,32,96,46,45,46,32,124,47,32,47,39,96,92,39,32,93]),
+    atom_concat('|  \\__/ || |  | |  | | | || ', '\\__/ |  ', Line1),
+    atom_codes(Atom2, [91,95,95,59,46,95,95,46,39,91,95,95,95,93,91,95,95,95,93,91,95,95,95,124,124,95,95,93,92,95,95,46,59,32,124,32,32]),
 
-    % Line 2
-    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
-    print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), 
-    print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(4, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
-    print_n_code(2, 0x2588, white), print_n(4, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '),
-    print_n(9, ' '), put_code_color(0x2551, white), nl,
 
-    % Line 3
-    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
-    print_n_code(6, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
-    print_n_code(2, 0x2588, white), print_n(1, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
-    print_n_code(2, 0x2588, white), print_n(4, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '),
-    print_n(9, ' '), put_code_color(0x2551, white), nl,
-
-    % Line 4
-    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
-    print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(7, ' '), 
-    print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '), 
-    print_n_code(2, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(1, ' '), print_n_code(2, 0x2584, white), print_n(1, ' '), 
-    print_n_code(2, 0x2588, white), print_n(1, ' '),
-    print_n(9, ' '), put_code_color(0x2551, white), nl,
-
-    % Line 5
-    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
-    print_n_code(6, 0x2588, white), print_n(3, ' '), print_n_code(7, 0x2588, white), print_n(2, ' '), print_n_code(2, 0x2588, white), print_n(2, ' '), 
-    print_n_code(2, 0x2588, white), print_n(3, ' '), print_n_code(4, 0x2588, white), print_n(3, ' '), print_n_code(6, 0x2588, white), print_n(2, ' '),
-    print_n(9, ' '), put_code_color(0x2551, white), nl,
-
-    % Line 6
-    write(' '), put_code_color(0x2551, white), print_n(9, ' '),
-    print_n(37, ' '), print_n_code(5, 0x2580, white),
-    print_n(9, ' '), put_code_color(0x2551, white), nl.
+    write(' '), word(' __       __    _                    ', Symbol, Size),
+    write(' '), word('[  |     [  |  (_)                   ', Symbol, Size),
+    write(' '), word(' | |.--.  | |  __   _ .--.   .--. _  ', Symbol, Size),
+    write(' '), word(Atom1, Symbol, Size),
+    write(' '), word(Line1, Symbol, Size),
+    write(' '), word(Atom2, Symbol, Size),
+    write(' '), word('                                |__] ', Symbol, Size).
 
 
 print_banner(menu):-
     Size is 60, Symbol = 0x2551,
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
-    write(' '), print_title,
+    print_title(Size, Symbol),
+    write(' '), line(1, Symbol, Size), 
     write(' '), line(1, Symbol, Size), 
     write(' '), word('1 -> Play', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
@@ -145,11 +120,11 @@ print_numbers(N):-
     write(N), write(' '), 
     N2 is N+1, print_numbers(N2).
 
-level_color(Ratio, Row, Color1, Color2, Color1) :-
+level_color(Ratio, Row, Color1, Color2, 1) :-
     RatioNorm is round(Ratio * 12), % Normalization 
     Row =< RatioNorm.
 
-level_color(Ratio, Row, Color1, Color2, Color2) :-
+level_color(Ratio, Row, Color1, Color2, 2) :-
     RatioNorm is round(Ratio * 12), % Normalization
     Row > RatioNorm.
 
@@ -157,8 +132,8 @@ level_color(Ratio, Row, Color1, Color2, Color2) :-
 % Board
 display_board([], _, Color1, Color2, Ratio) :- !.
 display_board([Row | Rest], Levels, Color1, Color2, Ratio) :-
-    level_color(Ratio, 12, Color1, Color2, ColorRow1),
-    level_color(Ratio, 1, Color1, Color2, ColorRow12),
+    level_color(Ratio, 12, Color1, Color2, N1), (N1 = 1 -> ColorRow1 = Color1, Code1 = 0x2593; N1 = 2 -> ColorRow1 = Color2, Code1 = 0x2592),
+    level_color(Ratio, 1, Color1, Color2, N12), (N12 = 1 -> ColorRow12 = Color1, Code12 = 0x2593; N12 = 2 -> ColorRow12 = Color2, Code12 = 0x2592),
 
     length(Row, L), Length is L*2, Len is Length + 6, RowsLen is 11, N is 1, 
     print_n(5,' '), put_code_color(0x250C, white), print_n_code(Len, 0x2500, white), put_code_color(0x2510, white),
@@ -166,13 +141,13 @@ display_board([Row | Rest], Levels, Color1, Color2, Ratio) :-
     print_n(5,' '), put_code_color(0x250C, white), print_n_code(Len, 0x2500, white), put_code_color(0x2510, white), nl,
 
     print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588, white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white),
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, 0x2592, ColorRow1), put_code_color(0x2502, bold_cyan), 
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, Code1, ColorRow1), put_code_color(0x2502, bold_cyan), 
     print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588, white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white), nl,
 
     display_board_rows([Row | Rest], Levels, RowsLen, Color1, Color2, Ratio),
 
     print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588,white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white),
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, 0x2592, ColorRow12), put_code_color(0x2502, bold_cyan), 
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), print_n_code(2, Code12, ColorRow12), put_code_color(0x2502, bold_cyan), 
     print_n(5,' '), put_code_color(0x2502, white), write(' '), print_n_code(2, 0x2588,white), print_n_code(Length, 0x2593, Color1), print_n_code(2, 0x2588,white), write(' '), put_code_color(0x2502, white), nl,
 
     print_n(5,' '), put_code_color(0x2514, white), print_n_code(Len, 0x2500, white), put_code_color(0x2518, white),
@@ -189,8 +164,8 @@ display_board_rows([Row | Rest], [RowLevel | RestLevel], RowsLen, Color1, Color2
     display_board_rows(Rest, RestLevel, RowNumber, Color1, Color2, Ratio).
 
 display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
-    RowNumber1 is RowNumber+1, level_color(Ratio, RowNumber1, Color1, Color2, ColorRow),
-    RowNumber < 10,
+    RowNumber1 is RowNumber+1, RowNumber < 10,
+    level_color(Ratio, RowNumber1, Color1, Color2, N), (N = 1 -> ColorRow = Color1, Code = 0x2593; N = 2 -> ColorRow = Color2, Code = 0x2592),
 
     % Board 
     print_n(3,' '), write(RowNumber), write(' '), put_code_color(0x2502, white), write(' '), put_code_color(0x2592, Color2), put_code_color(0x2592, Color2),
@@ -198,7 +173,7 @@ display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
     put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
 
     % Elo Bar
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(0x2592, ColorRow), put_code_color(0x2592, ColorRow), put_code_color(0x2502, bold_cyan), 
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(Code, ColorRow), put_code_color(Code, ColorRow), put_code_color(0x2502, bold_cyan), 
     
     % Levels
     print_n(3,' '), write(RowNumber), write(' '), put_code_color(0x2502, white), write(' '), put_code_color(0x2592, Color2), put_code_color(0x2592, Color2),
@@ -208,7 +183,7 @@ display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
 
 display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
     RowNumber1 is RowNumber+1,
-    level_color(Ratio, RowNumber1, Color1, Color2, ColorRow),
+    level_color(Ratio, RowNumber1, Color1, Color2, N), (N = 1 -> ColorRow = Color1, Code = 0x2593; N = 2 -> ColorRow = Color2, Code = 0x2592),
 
     % Board
     print_n(5,' '), put_code_color(0x2502 , white), write(' '), put_code_color(0x2592 , Color2), put_code_color(0x2592, Color2),
@@ -216,7 +191,7 @@ display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
     put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
 
     % Elo Bar 
-    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(0x2592, ColorRow), put_code_color(0x2592, ColorRow), put_code_color(0x2502, bold_cyan), 
+    print_n(5,' '), put_code_color(0x2502, bold_cyan), put_code_color(Code, ColorRow), put_code_color(Code, ColorRow), put_code_color(0x2502, bold_cyan), 
 
     % Levels
     print_n(5,' '), put_code_color(0x2502 , white), write(' '), put_code_color(0x2592 , Color2), put_code_color(0x2592, Color2),
