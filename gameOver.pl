@@ -28,7 +28,7 @@ is_valid_cell(Board, [Col, Row], 'W') :-
     Col2 is Col-1,
     Row2 is 10-Row,
     Row2 >= 0,
-    Col2 =< 20,
+    Col2 =< 10,
     Col2 >= 0,
     get_value(Board, Row2, Col2, 'W').
 
@@ -43,7 +43,7 @@ is_valid_cell(Board, [Col, Row], 'B') :-
 % Base case for White win
 dfs(Board, [Col, 0], Visited, 'W', true).
 % Base case for Black win
-dfs(Board, [21, Row], Visited, 'B', true).
+dfs(Board, [11, Row], Visited, 'B', true).
 
 dfs(Board, [Col, Row], Visited, Color, Success) :-
     is_valid_cell(Board, [Col, Row], Color), % same color, inside boundaries

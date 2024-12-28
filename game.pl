@@ -346,8 +346,7 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], Value):-
         max_count_col(Board, NumRC, Block, CountColGood, NumColGood),
         max_count_row(Board, NumRC, OtherBlock, CountRowBad, NumRowBad),
         %max_count_col(Board, NumRC, OtherBlock, CountColBad, NumColBad),
-        CountRowBad2 is CountRowBad // 2,
-        TotalCount is CountColGood + CountRowBad2,
+        TotalCount is CountColGood + CountRowBad,
         Value is CountColGood / TotalCount.
     %).    
 
