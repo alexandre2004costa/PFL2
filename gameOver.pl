@@ -45,9 +45,9 @@ is_valid_cell(Board, [Col, Row], 'B') :-
     get_value(Board, Row2, Col2, 'B').
 
 % Base case for White win
-if_valid_dfs(Board, [Col, 0], VisitedIn, 'W', VisitedIn, true):-write('WIN').
+if_valid_dfs(Board, [Col, 0], VisitedIn, 'W', VisitedIn, true).
 % Base case for Black win
-if_valid_dfs(Board, [21, Row], VisitedIn, 'B', VisitedIn, true):-write('WIN').
+if_valid_dfs(Board, [21, Row], VisitedIn, 'B', VisitedIn, true).
 
 if_valid_dfs(Board, [Col, Row], VisitedIn, Color, VisitedOut, Success) :-
     is_valid_cell(Board, [Col, Row], Color),
@@ -78,14 +78,6 @@ dfs(Board, [Col, Row], VisitedIn, Color, VisitedOut, Success) :-
 
     Success = false
     )))).
-
-
-
-
-
-        
-
-
 
 game_over([Player, [FirstLine|Board], Levels, OtherPlayer, 0],  'T').
 game_over([Player, [FirstLine|Board], Levels, OtherPlayer, MovesPlayed], Winner) :-
