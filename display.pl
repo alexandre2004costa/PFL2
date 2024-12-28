@@ -107,6 +107,34 @@ print_banner(level, N):-
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
+print_banner_starter:-
+    Size is 60, Symbol = 0x2551, 
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('Do you want to be the first to play?', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1 -> Yes', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('2 -> No ', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
+print_banner_pcVspc:-
+    Size is 60, Symbol = 0x2551, 
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('What type of Pc battle you want to see?', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1 -> Pc AI 1 Vs Pc AI 1', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('2 -> Pc AI 1 Vs Pc AI 2', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('3 -> Pc AI 2 Vs Pc AI 1', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('4 -> Pc AI 2 Vs Pc AI 2', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
 print_banner(colors, N):-
     Size is 60, Symbol = 0x2551,
     (N = 1 -> Title = 'Colors for Player 1', Letter = 'W'; N = 2 -> Title = 'Colors for Player 2', Letter = 'B'),

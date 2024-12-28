@@ -26,24 +26,50 @@ state(colors, Color1, Color2):-
     print_banner(display_colors, Color11, Color22),
     state(initial, Color11, Color22).
 
-
 state(play_uu, Color1, Color2) :-
-    %print_banner(play, )
     play_game('PlayerVsPlayer', Color1, Color2).
 
 state(play_uc, Color1, Color2) :-
-    write('B'), nl,
     print_banner(level, 0),
     read_option(Option, 2),
-    transition(play_uc, Input, NextState), 
+    transition(play_uc, Option, NextState), 
+    state(NextState, Option, Color1, Color2).
+
+state(play_uc_choose_start, LastOption, Color1, Color2):-
+    print_banner_starter,
+    read_option(Option, 2),
+    transition(play_uc_choose_start, LastOption, Option, NextState), 
     state(NextState, Color1, Color2).
-state(level_1, Color1, Color2) :-
-    play_game('PlayerVsPc_1', Color1, Color2).
-state(level_2, Color1, Color2) :-
-    play_game('PlayerVsPc_2', Color1, Color2).
 
 state(play_cc, Color1, Color2) :-
-    play_game('PcVsPc', Color1, Color2).
+    print_banner_pcVspc,
+    read_option(Option, 4),
+    transition(play_cc, Option, NextState), 
+    state(NextState, Color1, Color2).
+
+state(levelUC11, Color1, Color2) :-
+    play_game('PlayerVsPc_1', Color1, Color2).
+
+state(levelUC12, Color1, Color2) :-
+    play_game('Pc_1VsPlayer', Color1, Color2).
+
+state(levelUC21, Color1, Color2) :-
+    play_game('PlayerVsPc_2', Color1, Color2).
+
+state(levelUC22, Color1, Color2) :-
+    play_game('Pc_2VsPlayer', Color1, Color2).
+
+state(levelCC11, Color1, Color2) :-
+    play_game('Pc_1VsPc_1', Color1, Color2).
+
+state(levelCC12, Color1, Color2) :-
+    play_game('Pc_1VsPc_2', Color1, Color2).
+
+state(levelCC21, Color1, Color2) :-
+    play_game('Pc_2VsPc_1', Color1, Color2).
+
+state(levelCC22, Color1, Color2) :-
+    play_game('Pc_2VsPc_2', Color1, Color2).
 
 state(exit, Color1, Color2) :-
     write('Exiting...'), nl, nl. 
@@ -56,132 +82,90 @@ transition(mode, 1, play_uu).
 transition(mode, 2, play_uc).  
 transition(mode, 3, play_cc).
 transition(mode, 4, initial).
-transition(play_uc, 1, level_1).
-transition(play_uc, 2, level_2).
-transition(play_cc, 1, level_11).
-transition(play_cc, 2, level_12).
-transition(play_cc, 3, level_21).
-transition(play_cc, 4, level_22).
+transition(play_uc, N, play_uc_choose_start).
+transition(play_uc_choose_start, 1, 1, levelUC11).
+transition(play_uc_choose_start, 1, 2, levelUC12).
+transition(play_uc_choose_start, 2, 1, levelUC21).
+transition(play_uc_choose_start, 2, 2, levelUC22).
+transition(play_cc, 1, levelCC11).
+transition(play_cc, 2, levelCC12).
+transition(play_cc, 3, levelCC21).
+transition(play_cc, 4, levelCC22).
 transition(_, _, initial). 
 
 
 % Play ------------------------------------------------------------------------------------------------
 
-initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]).
+initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]):-
+    board(Board), levels(Levels).
 
 play :- state(initial, white, white).
 
-choose_players('PlayerVsPlayer', ['p1','p2']).
-choose_players('PlayerVsPc_1', ['p1','p2']).
-choose_players('PlayerVsPc_2', ['p1','p2']).
-choose_players('PcVsPc', ['p1','p2']).
-
 play_game(Mode, Color1, Color2):-
-    board(B), levels(L),
-    choose_players(Mode, Players),
-    initial_state(Players, [P1, B, L, P2, MovesLeft]),
-    play_turn(Mode, [P1, B, L, P2, MovesLeft, Color1, Color2]).
+    initial_state(['p1','p2'], [P1, Board, Levels, P2, MovesLeft]),
+    play_turn(Mode, [P1, Board, Levels, P2, MovesLeft, Color1, Color2]).
 
-play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
+play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
     display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
-        write('Game tied!')  
+        write('Game tied!'),nl,
+        state(initial, Color1, Color2)
     ;   
         Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner])  
+        format("~w venceu o jogo!~n", [Winner]),nl,
+        state(initial, Color1, Color2)
     ;
-        % Continue the game in case of no winner
-        read_input(N,X,Y, Levels, Color1, Color2),
+        what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y),
         move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
-        play_turn('PlayerVsPlayer', NewState)
+        play_turn(Mode, NewState)
     ).
 
-play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p1', Board, Levels, Color1, Color2, Ratio]),  
-    game_over(['p1', Board, Levels, OtherPlayer, MovesLeft], Winner),  
-    ( Winner = 'T' ->                  
-        write('Game tied!')  
-    ;   
-        Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner])  
-    ;
-        % Continue the game in case of no winner
-        read_input(N,X,Y, Levels, Color1, Color2),
-        move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
-        play_turn('PlayerVsPc_1', NewState)
-    ).
+what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    read_input(N,X,Y, Levels, Color1, Color2).
 
-play_turn('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p2', Board, Levels, Color1, Color2, Ratio]),  
-    game_over(['p2', Board, Levels, OtherPlayer, MovesLeft], Winner),  
-    ( Winner = 'T' ->                  
-        write('Game tied!')  
-    ;   
-        Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner])  
-    ;
-        % Continue the game in case of no winner
+what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    read_input(N,X,Y, Levels, Color1, Color2).
 
-        random_move(Board, Levels, N, X, Y),
-        move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
-        play_turn('PlayerVsPc_1', NewState)
-    ).
+what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y]).
 
-play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    value(['p1', Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p1', Board, Levels, Color1, Color2, Ratio]),  
-    game_over(['p1', Board, Levels, OtherPlayer, MovesLeft], Winner),  
-    ( Winner = 'T' ->                  
-        write('Game tied!')  
-    ;   
-        Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner])  
-    ;
-        % Continue the game in case of no winner
-        read_input(N,X,Y, Levels, Color1, Color2),
-        move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
-        play_turn('PlayerVsPc_2', NewState)
-    ).
+what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    read_input(N,X,Y, Levels, Color1, Color2).
 
-play_turn('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    value(['p2', Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p2', Board, Levels, Color1, Color2, Ratio]),  
-    game_over(['p2', Board, Levels, OtherPlayer, MovesLeft], Winner),  
-    ( Winner = 'T' ->                  
-        write('Game tied!')  
-    ;   
-        Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner])  
-    ;
-        % Continue the game in case of no winner
-        Board2 = Board,
-        choose_move(['p2', Board2, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]),
-        move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
-        play_turn('PlayerVsPc_2', NewState)
-    ).
+what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y]).
 
+what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    read_input(N,X,Y, Levels, Color1, Color2).
 
-play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
-    game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
-    ( Winner = 'T' ->                  
-        write('Game tied!')  
-    ;   
-        Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner])  
-    ;
-        % Continue the game in case of no winner
-        %random_move(Board,Levels, N, X, Y),
-        choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]),
-        move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
-        play_turn('PcVsPc', NewState)
-    ).
+what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move(['p2', Board, Levels, 'p1', MovesLeft], 2, [N, X, Y]).
 
+what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    read_input(N,X,Y, Levels, Color1, Color2).
+
+what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]).
+
+what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y]).
+
+what_move('Pc_1VsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y]).
+
+what_move('Pc_1VsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]).
+
+what_move('Pc_2VsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]).
+
+what_move('Pc_2VsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y]).
+
+what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y):-
+    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]).
 
 
 % Validate Inputs --------------------------------------------------------------------------------------
@@ -401,8 +385,12 @@ block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], B
     ).
 
 
+choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y]) :-
+    write('Playing random'),nl,
+    random_move(Board, Levels, N, X, Y).
+
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move) :-
-    write(MovesLeft),nl,
+    write('Playing intel'),nl,
     valid_moves(Board, Levels, Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Player, Moves, MoveWinner),
     (MoveWinner \= none ->
