@@ -5,39 +5,42 @@
 :- consult(display). 
 :- consult(colors).
 
-% Menu
-state(initial, Color1, Color2) :-
-    print_banner(30, '0'),  
+% Validate
+read_option(Option, N) :-
     write('Option: '), nl,
     read(Input),
-    transition(initial, Input, NextState), 
+    (integer(Input), Input > 0, Input =< N -> Option is Input, nl; write('Invalid input. '), read_option(Option, N)).
+
+% Menu
+state(initial, Color1, Color2) :-
+    print_banner(menu), 
+    read_option(Option, 3),
+    transition(initial, Option, NextState), 
     state(NextState, Color1, Color2). 
 
 state(mode, Color1, Color2) :-
-    print_bannerPlay(30, '0'),  
-    write('Option: '), nl,
-    read(Input),
+    print_banner(play),  
+    read_option(Option, 3),
     transition(mode, Input, NextState), 
     state(NextState, Color1, Color2). 
 
 state(colors, Color1, Color2):-
-    print_bannerColors(30, '0'),  
+    print_banner(colors, 1),
+    print_banner(colors, 2),  
     read_input_colors(Color11, Color22),
-    display_code('S', Color11),
-    display_code('S', Color22),
-    state(initial, Color11, Color22). 
+    print_banner(display_colors, Color11, Color22),
+    state(initial, Color11, Color22).
 
 
 state(play_uu, Color1, Color2) :-
+    %print_banner(play, )
     play_game('PlayerVsPlayer', Color1, Color2).
 
-
 state(play_uc, Color1, Color2) :-
-    %FALTA PRINT BANNER
-    write('Option: '), nl,
-    read(Input),
+    print_banner(level, 0),
+    read_option(Option, 2),
     transition(play_uc, Input, NextState), 
-    state(NextState, Color1, Color2). 
+    state(NextState, Color1, Color2).
 state(level_1, Color1, Color2) :-
     play_game('PlayerVsPc_1', Color1, Color2).
 state(level_2, Color1, Color2) :-
@@ -46,8 +49,9 @@ state(level_2, Color1, Color2) :-
 state(play_cc, Color1, Color2) :-
     play_game('PcVsPc', Color1, Color2).
 
-state(exit) :-
-    write('Exiting...'), nl. 
+state(exit, Color1, Color2) :-
+    write('Exiting...'), nl, nl. 
+
 
 transition(initial, 1, mode).  
 transition(initial, 2, colors).  
@@ -69,7 +73,7 @@ transition(_, _, initial).
 
 initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]).
 
-play :- state(initial, red, blue).
+play :- state(initial, white, white).
 
 choose_players('PlayerVsPlayer', ['p1','p2']).
 choose_players('PlayerVsPc_1', ['p1','p2']).
@@ -84,7 +88,7 @@ play_game(Mode, Color1, Color2):-
 
 play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game([Player, Board, Color1, Color2, Ratio]),  
+    display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -100,7 +104,7 @@ play_turn('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Colo
 
 play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p1', Board, Color1, Color2, Ratio]),  
+    display_game(['p1', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p1', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -116,7 +120,7 @@ play_turn('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 play_turn('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p2', Board, Color1, Color2, Ratio]),  
+    display_game(['p2', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p2', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -133,7 +137,7 @@ play_turn('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value(['p1', Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p1', Board, Color1, Color2, Ratio]),  
+    display_game(['p1', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p1', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -149,7 +153,7 @@ play_turn('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 play_turn('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value(['p2', Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game(['p2', Board, Color1, Color2, Ratio]),  
+    display_game(['p2', Board, Levels, Color1, Color2, Ratio]),  
     game_over(['p2', Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
@@ -166,8 +170,8 @@ play_turn('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 
 play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    value_next_move([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game([Player, Board, Color1, Color2, Ratio]),  
+    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!')  
