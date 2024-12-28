@@ -32,7 +32,7 @@ is_valid_cell(Board, [Col, Row], 'W') :-
     Col2 is Col-1,
     Row2 is 10-Row,
     Row2 >= 0,
-    Col2 =< 20,
+    Col2 =< 10,
     Col2 >= 0,
     get_value(Board, Row2, Col2, 'W').
 
@@ -47,7 +47,7 @@ is_valid_cell(Board, [Col, Row], 'B') :-
 % Base case for White win
 if_valid_dfs(Board, [Col, 0], VisitedIn, 'W', VisitedIn, true).
 % Base case for Black win
-if_valid_dfs(Board, [21, Row], VisitedIn, 'B', VisitedIn, true).
+if_valid_dfs(Board, [11, Row], VisitedIn, 'B', VisitedIn, true).
 
 if_valid_dfs(Board, [Col, Row], VisitedIn, Color, VisitedOut, Success) :-
     is_valid_cell(Board, [Col, Row], Color),
