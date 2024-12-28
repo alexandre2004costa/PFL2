@@ -166,9 +166,11 @@ play_turn('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 
 play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
-    value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
+    value_next_move([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
     display_game([Player, Board, Color1, Color2, Ratio]),  
+    write('into'),nl,
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
+    write('out'),nl,
     ( Winner = 'T' ->                  
         write('Game tied!')  
     ;   
@@ -176,7 +178,7 @@ play_turn('PcVsPc', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Colo
         format("~w venceu o jogo!~n", [Winner])  
     ;
         % Continue the game in case of no winner
-        random_move(Board,Levels, N, X, Y),
+        choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y]),
         move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, Y, X], NewState),
         play_turn('PcVsPc', NewState)
     ).
@@ -326,19 +328,12 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], Value):-
     NumRC is 1,
     (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
     (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
-    %valid_moves(Board, Levels, Moves),
+    valid_moves(Board, Levels, Moves),
     %is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Player, Moves, MoveWinnerPlayer),
-    %is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], OtherPlayer, Moves, MoveWinnerOtherPlayer),
     %( MoveWinnerPlayer \= none, Player = WhiteWinner ->                  
     %    Value = 1 
     %;   
     %    MoveWinnerPlayer \= none, Player = BlackWinner ->                  
-    %    Value = 0 
-    %; 
-    %    MoveWinnerOtherPlayer \= none, OtherPlayer = WhiteWinner ->                  
-    %    Value = 1 
-    %;   
-    %    MoveWinnerOtherPlayer \= none, OtherPlayer = BlackWinner ->                  
     %    Value = 0 
     %; 
         %max_count_row(Board, NumRC, Block, CountRowGood, NumRowGood),
@@ -348,7 +343,19 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], Value):-
         CountRowBad2 is CountRowBad // 2,
         TotalCount is CountColGood + CountRowBad2,
         Value is CountColGood / TotalCount.
-    %).    
+    %). 
+
+value_next_move([Player, Board, Levels, OtherPlayer, MovesLeft], Value):-
+    NumRC is 1,
+    (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
+    (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
+    %max_count_row(Board, NumRC, Block, CountRowGood, NumRowGood),
+    max_count_col(Board, NumRC, Block, CountColGood, NumColGood),
+    max_count_row(Board, NumRC, OtherBlock, CountRowBad, NumRowBad),
+    %max_count_col(Board, NumRC, OtherBlock, CountColBad, NumColBad),
+    CountRowBad2 is CountRowBad // 2,
+    TotalCount is CountColGood + CountRowBad2,
+    Value is CountColGood / TotalCount.  
 
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], PlayerWanted,[Move], MoveWinner):-
     (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
@@ -372,7 +379,6 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], PlayerWante
     ).    
     
 winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner):-
-    NumRC is 1,
     move2([Player, Board, Levels, OtherPlayer, MovesLeft], Move, OtherGameState),
     game_over(OtherGameState, Winner).
 
@@ -382,7 +388,7 @@ block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], B
         generate_coordinates(1, 4, N2),
         \+ N2 = N,
         move2([Player, Board, Levels, OtherPlayer, MovesLeft], [N2, X, Y], NewGameState),
-        value(NewGameState, Value)
+        value_next_move(NewGameState, Value)
     ), MovesWithValues),
     write(MovesWithValues),nl,
     (Player = WhiteWinner ->
@@ -393,35 +399,36 @@ block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], B
 
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move) :-
-    valid_moves(Board, Levels, Moves),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Player, Moves, MoveWinner),
-    write(Player), nl,
-    (MoveWinner \= none ->
-        write('awdwadawda'),nl,
-        Move = MoveWinner
-    ;
-        write('awdawd'),nl,
-        is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], OtherPlayer, Moves, MoveWinnerOther),
-        (MoveWinnerOther \= none -> 
-            block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], MoveWinnerOther, BlockerMove),
-            Move = BlockerMove
-        ;
-            choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove),
-            Move = BestMove
-        )
-    ),
-    nl, write(Move), nl.
+    write(MovesLeft),
+    %valid_moves(Board, Levels, Moves),
+    %is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Player, Moves, MoveWinner),
+    %is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], OtherPlayer, Moves, MoveWinnerOther),
+    %write(Player), nl,
+    %(MoveWinner \= none ->
+    %    Move = MoveWinner
+    %;
+    %    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], OtherPlayer, Moves, MoveWinnerOther),
+    %    (MoveWinnerOther \= none -> 
+    %        block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], MoveWinnerOther, BlockerMove),
+    %        Move = BlockerMove
+    %    ;
+            %choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove),
+            random_move(Board, Levels, N, X, Y),
+            Move = [N,X,Y].
+    %    )
+    %),
+    %nl, write(Move), nl.
 
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move).
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], BestMove) :-
     move2([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
-    value(NewGameState, Value),
+    value_next_move(NewGameState, Value),
     write(Move), write(Value),
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, OtherMove),
     move2([Player, Board, Levels, OtherPlayer, MovesLeft], OtherMove, OtherGameState),
-    value(OtherGameState, OtherValue),
+    value_next_move(OtherGameState, OtherValue),
     (Value < OtherValue -> BestMove = Move; BestMove = OtherMove).   
     
 
