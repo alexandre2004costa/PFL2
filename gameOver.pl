@@ -19,7 +19,7 @@ process_column(_, _, [], _, _,_,false).
 
 process_column(Board, Y, [[PlayerColor|Line]|Lines], X, PlayerColor, Visited, Success):-
     NextY is Y+1,
-    is_valid_cell(Board, [X,Y], Color), % Verifica célula antes de chamar dfs
+    is_valid_cell(Board, [X,Y], Color),
     \+ member([X, Y], Visited),
     dfs(Board, [X, Y], Visited, PlayerColor, NewVisited, DfsSuccess),
     ( DfsSuccess = true -> Success = true ; process_column(Board, NextY, Lines, X, PlayerColor, NewVisited, Success) ).  
@@ -79,7 +79,7 @@ dfs(Board, [Col, Row], VisitedIn, Color, VisitedOut, Success) :-
     Success = false
     )))).
 
-game_over([Player, [FirstLine|Board], Levels, OtherPlayer, 0],  'T').
+game_over([Player, [FirstLine|Board], Levels, OtherPlayer, 0],  'T'). % Tie in case of no moves left
 game_over([Player, [FirstLine|Board], Levels, OtherPlayer, MovesPlayed], Winner) :-
     process_line([FirstLine|Board], 10, FirstLine, 1, 'W',[], WhiteWins),
     process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B', [], BlackWins),
