@@ -8,7 +8,7 @@
 
 % Menu ------------------------------------------------------------------------------------------------
 state(initial, Color1, Color2) :-
-    print_banner(menu), 
+    print_banner(menu, Color1, Color2), 
     read_option(Option, 3),
     transition(initial, Option, NextState), 
     state(NextState, Color1, Color2). 
@@ -21,9 +21,9 @@ state(mode, Color1, Color2) :-
 
 state(colors, Color1, Color2):-
     print_banner(colors, 1),
-    print_banner(colors, 2),  
+    print_banner(colors, 2), nl,
     read_input_colors(Color11, Color22),
-    print_banner(display_colors, Color11, Color22),
+    print_banner(display_colors, Color11, Color22), nl,
     state(initial, Color11, Color22).
 
 state(play_uu, Color1, Color2) :-
@@ -36,13 +36,13 @@ state(play_uc, Color1, Color2) :-
     state(NextState, Option, Color1, Color2).
 
 state(play_uc_choose_start, LastOption, Color1, Color2):-
-    print_banner_starter,
+    print_banner(starter),
     read_option(Option, 2),
     transition(play_uc_choose_start, LastOption, Option, NextState), 
     state(NextState, Color1, Color2).
 
 state(play_cc, Color1, Color2) :-
-    print_banner_pcVspc,
+    print_banner(pcVspc),
     read_option(Option, 4),
     transition(play_cc, Option, NextState), 
     state(NextState, Color1, Color2).
@@ -71,6 +71,11 @@ state(levelCC21, Color1, Color2) :-
 state(levelCC22, Color1, Color2) :-
     play_game('Pc_2VsPc_2', Color1, Color2).
 
+state(winner, Color1, Color2) :-
+    read_option(Option, 2),
+    transition(winner, Option, NextState), 
+    state(NextState, Color1, Color2).
+
 state(exit, Color1, Color2) :-
     write('Exiting...'), nl, nl. 
 
@@ -91,6 +96,8 @@ transition(play_cc, 1, levelCC11).
 transition(play_cc, 2, levelCC12).
 transition(play_cc, 3, levelCC21).
 transition(play_cc, 4, levelCC22).
+transition(winner, 1, initial).
+transition(winner, 2, exit).
 transition(_, _, initial). 
 
 
@@ -107,15 +114,16 @@ play_game(Mode, Color1, Color2):-
 
 play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
+    display_game([Player, Board, Levels, Color1, Color2, Ratio, MovesLeft]),  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!'),nl,
         state(initial, Color1, Color2)
     ;   
         Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner]),nl,
-        state(initial, Color1, Color2)
+        %format("~w venceu o jogo!~n", [Winner]),nl,
+        print_banner(final, Winner, Color1, Color2),
+        state(winner, Color1, Color2)
     ;
         what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y),
         move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
@@ -176,7 +184,6 @@ read_option(Option, N) :-
 
 
 read_input(N, X, Y, Levels, Color1, Color2) :-
-    display_pieces(Color1, Color2),
     write('Choose the type of block (1-4): '),
     validate_input_type(N), nl,
     read_input_coordinates(X, Y, Levels), nl.
