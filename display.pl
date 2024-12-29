@@ -21,6 +21,10 @@ word(Text, Symbol, Size) :- atom_length(Text, TextSize),
     Padding is (Size - TextSize - 2) // 2, PaddingRight is Size - TextSize - Padding, 
     put_code_color(Symbol, white), print_n(Padding, ' '), write(Text), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
 
+word_color(Text, Symbol, Size, Color) :- atom_length(Text, TextSize), 
+    Padding is (Size - TextSize - 2) // 2, PaddingRight is Size - TextSize - Padding, 
+    put_code_color(Symbol, white), print_n(Padding, ' '), write_color(Text, Color), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
+
 
 % Menu
 print_title(Size, Symbol) :- 
@@ -142,6 +146,9 @@ print_banner(display_colors, Color1, Color2):-
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 
+print_banner(winner, player1, player 2):-.
+
+
 % Auxiliar functions
 print_numbers(10):- !.
 print_numbers(N):-
@@ -182,7 +189,7 @@ display_board([Row | Rest], Levels, Color1, Color2, Ratio) :-
     print_n(5,' '), put_code_color(0x2514, bold_cyan), print_n_code(2, 0x2500, bold_cyan), put_code_color(0x2518, bold_cyan), 
     print_n(5,' '), put_code_color(0x2514, white), print_n_code(Len, 0x2500, white), put_code_color(0x2518, white), nl,
     
-    print_n(11, ' '), print_numbers(N), print_n(24, ' '), print_numbers(N), nl.
+    print_n(10, ' '), print_numbers(N), print_n(24, ' '), print_numbers(N), nl.
 
 
 display_board_rows([], _, _, Color1, Color2, Ratio) :- !.
