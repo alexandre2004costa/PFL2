@@ -105,9 +105,10 @@ play_game(Mode, Color1, Color2):-
     initial_state(['p1','p2'], [P1, Board, Levels, P2, MovesLeft]),
     play_turn(Mode, [P1, Board, Levels, P2, MovesLeft, Color1, Color2], 0.5).
 
-play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], MoveRatio) :-
-    display_game([Player, Board, Levels, Color1, Color2, MoveRatio]),  
+play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], MoveRatio) :-  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
+    (Winner = 'p1' -> FinalRatio = 1 ; Winner = 'p2' -> FinalRatio = 0 ; FinalRatio = MoveRatio),
+    display_game([Player, Board, Levels, Color1, Color2, FinalRatio]),write(MovesLeft),nl,write(FinalRatio),
     ( Winner = 'T' ->                  
         write('Game tied!'),nl,
         state(initial, Color1, Color2)
@@ -117,6 +118,7 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2],
         state(initial, Color1, Color2)
     ;
         what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, NewMoveRatio),
+        write([N, X, Y]),
         move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn(Mode, NewState, NewMoveRatio)
     ).
@@ -128,24 +130,24 @@ what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Colo
 
 what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
     read_input(N,X,Y, Levels, Color1, Color2),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
+    check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
     value(NewGameState, MoveRatio).
 
 what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
+    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
 what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
     read_input(N,X,Y, Levels, Color1, Color2),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
+    check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
     value(NewGameState, MoveRatio).
 
 
 what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
 what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
     read_input(N,X,Y, Levels, Color1, Color2),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
+    check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
     value(NewGameState, MoveRatio).
 
 
@@ -154,12 +156,12 @@ what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
 
 what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
     read_input(N,X,Y, Levels, Color1, Color2),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
+    check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
     value(NewGameState, MoveRatio).
 
 
 what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
 what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
     choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
@@ -320,12 +322,14 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
     transposee(Board, TransposedBoard),
     max_count(TransposedBoard, NumRC, Block, -1, -1, CountCol, NumCol).
 
-
+value([Player, Board, Levels, OtherPlayer, 0], 0.5).
+    
 value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
     NumRC is 1,
     (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
     valid_moves(Board, Levels, Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
+    write([WMove, WWin]), write([BMove, BWin]), write(Player),
     (  WMove \= none, Player = 'p2' ->
         Compensation = 0.15
     ; BMove \= none, Player = 'p1' ->
@@ -346,7 +350,6 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
         TotalCount is CountColGood + CountRowBad,
         BaseValue is CountColGood / TotalCount,
     
-        % Aplica a compensação
         Value is BaseValue + Compensation
     ),
     ClampedValue is max(0, min(1, Value)).
@@ -431,7 +434,7 @@ block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], B
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRatio) :-
     write('Playing random'),nl,
     random_move(Board, Levels, N, X, Y),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),     
     value(NewGameState, MoveRatio).
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio) :-
@@ -457,11 +460,11 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio)
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move, MoveRatio):-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
-    value_next_move(NewGameState, MoveRatio).
+    value(NewGameState, MoveRatio).
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], BestMove, MoveRatio) :-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
-    value_next_move(NewGameState, NewMoveRatio),
+    value(NewGameState, NewMoveRatio),
     %write(Move), write(NewMoveRatio),
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, OtherMove, OtherMoveRatio),
 
