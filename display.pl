@@ -21,9 +21,13 @@ word(Text, Symbol, Size) :- atom_length(Text, TextSize),
     Padding is (Size - TextSize - 2) // 2, PaddingRight is Size - TextSize - Padding, 
     put_code_color(Symbol, white), print_n(Padding, ' '), write(Text), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
 
-word_color(Text, Symbol, Size, Color) :- atom_length(Text, TextSize), 
+word_color(Text, Color, Symbol, Size) :- atom_length(Text, TextSize), 
     Padding is (Size - TextSize - 2) // 2, PaddingRight is Size - TextSize - Padding, 
     put_code_color(Symbol, white), print_n(Padding, ' '), write_color(Text, Color), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
+
+word_color_2(Text, Color, Text2, Color2, Symbol, Size) :- atom_length(Text, TextSize), atom_length(Text2, TextSize2), 
+    Padding is (Size - TextSize - TextSize2 - 2) // 2, PaddingRight is Size - TextSize - TextSize2 - Padding, 
+    put_code_color(Symbol, white), print_n(Padding, ' '), write_color(Text, Color),  write_color(Text2, Color2), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
 
 
 % Menu
@@ -32,30 +36,29 @@ print_title(Size, Symbol) :-
     atom_concat('|  \\__/ || |  | |  | | | || ', '\\__/ |  ', Line1),
     atom_codes(Atom2, [91,95,95,59,46,95,95,46,39,91,95,95,95,93,91,95,95,95,93,91,95,95,95,124,124,95,95,93,92,95,95,46,59,32,124,32,32]),
 
+    write(' '), word_color(' __       __    _                    ', white, Symbol, Size),
+    write(' '), word_color('[  |     [  |  (_)                   ', white, Symbol, Size),
+    write(' '), word_color(' | |.--.  | |  __   _ .--.   .--. _  ', white, Symbol, Size),
+    write(' '), word_color(Atom1, white, Symbol, Size),
+    write(' '), word_color(Line1, white, Symbol, Size),
+    write(' '), word_color(Atom2, white, Symbol, Size),
+    write(' '), word_color('                                |__] ', white, Symbol, Size).
 
-    write(' '), word(' __       __    _                    ', Symbol, Size),
-    write(' '), word('[  |     [  |  (_)                   ', Symbol, Size),
-    write(' '), word(' | |.--.  | |  __   _ .--.   .--. _  ', Symbol, Size),
-    write(' '), word(Atom1, Symbol, Size),
-    write(' '), word(Line1, Symbol, Size),
-    write(' '), word(Atom2, Symbol, Size),
-    write(' '), word('                                |__] ', Symbol, Size).
 
-
-print_banner(menu):-
+print_banner(menu, Color1, Color2):-
     Size is 60, Symbol = 0x2551,
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
     print_title(Size, Symbol),
     write(' '), line(1, Symbol, Size), 
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> Play', Symbol, Size),
+    write(' '), word_color_2('1 -> ', Color1, 'Play', Color2, Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     %word('2-> Instructions', Symbol, Size),
     %line(1, Symbol, Size),
-    write(' '), word('2 -> Configurations', Symbol, Size),
+    write(' '), word_color_2('2 -> ', Color1, 'Configurations', Color2, Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('3 -> Exit', Symbol, Size),
+    write(' '), word_color_2('3 -> ', Color1, 'Exit', Color2, Symbol, Size),
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl. 
 
@@ -146,7 +149,18 @@ print_banner(display_colors, Color1, Color2):-
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 
-print_banner(winner, player1, player 2):-.
+print_banner(final, Winner, Loser):-
+    Size is 60, Symbol = 0x2551,
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('Colors', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), put_code_color(0x2551, white), print_n(11, ' '),
+    write('Player 1 -> '), display_code('W', Color1), display_code('W', Color1), print_n(10, ' '),
+    write('Player 2 -> '), display_code('B', Color2), display_code('B', Color2), print_n(11, ' '), put_code_color(0x2551, white), nl,
+    write(' '), line(1, Symbol, Size),
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
 
 
 % Auxiliar functions
@@ -248,33 +262,42 @@ display_levels([]) :- !.
 display_levels([Cell | Rest]) :- write(Cell), write(Cell), display_levels(Rest).
 
 
-displayPlayer('p1'):-
-    write('Turn: Player 1'), nl.
+ display_player_moves(Player, Moves, Color):-
+    (Player = 'p1' -> Text = 'Player 1'; Player = 'p2' -> Text = 'Player 2'),
 
-displayPlayer('p2'):-
-    write('Turn: Player 2'), nl.
+    atom_length(Text, TextSize), (Moves < 10 -> MoveSize = 1; MoveSize = 2),
+    Size is 73-6-TextSize-12-MoveSize-22-2,
+    write(' '), put_code_color(0x2551, Color),  write(' '), write(' '),
+    write('Turn: '), write_color(Text, Color), print_n(22, ' '), write('Moves left: '), write(Moves),
+    print_n(Size, ' '), put_code_color(0x2551, Color), nl.
 
-displayPlayer('pc1'):-
-    write('Turn: Pc 1'), nl.
-
-displayPlayer('pc2'):-
-    write('Turn: Pc 2'), nl.
-
-display_pieces(Color1, Color2):-
+display_pieces(Color1, Color2, Color):-
     piece_coordinates(piece1, [P1, P12]),
     piece_coordinates(piece2, [P2, P22]),
     piece_coordinates(piece3, [P3, P32]),
-    piece_coordinates(piece4, [P4, P42]), nl,
+    piece_coordinates(piece4, [P4, P42]),
+
+    write(' '), put_code_color(0x2551, Color),  write(' '), write(' '), 
     write('Piece 1 -> '), display_cells(P1,Color1, Color2), print_n(3, ' '),
     write('Piece 2 -> '), display_cells(P2,Color1, Color2), print_n(3, ' '),
     write('Piece 3 -> '), display_cells(P3,Color1, Color2), print_n(3, ' '),
-    write('Piece 4 -> '), display_cells(P4,Color1, Color2), nl,
+    write('Piece 4 -> '), display_cells(P4,Color1, Color2), 
+    write(' '), write(' '), put_code_color(0x2551, Color), nl,
+
+    write(' '), put_code_color(0x2551, Color),  write(' '), write(' '), 
     write('           '), display_cells(P12,Color1, Color2), print_n(3, ' '),
     write('           '), display_cells(P22,Color1, Color2), print_n(3, ' '),
     write('           '), display_cells(P32,Color1, Color2), print_n(3, ' '),
-    write('           '), display_cells(P42,Color1, Color2), nl, nl.
+    write('           '), display_cells(P42,Color1, Color2), 
+    write(' '), write(' '), put_code_color(0x2551, Color), nl.
 
 
-display_game([Player, Board, Levels, Color1, Color2, Ratio]):-
+display_game([Player, Board, Levels, Color1, Color2, Ratio, MovesLeft]):-
     display_board(Board, Levels, Color1, Color2, Ratio), nl,
-    displayPlayer(Player).
+
+    Size is 73, Symbol = 0x2551, (Player = 'p1' -> Color = Color1; Player = 'p2' -> Color = Color2),
+    write(' '), put_code_color(0x2554, Color), print_n_code(Size, 0x2550, Color), put_code_color(0x2557, Color), nl,
+    display_player_moves(Player, MovesLeft, Color),
+    write(' '), put_code_color(0x2551, Color), print_n(Size, ' '), put_code_color(0x2551, Color), nl,
+    display_pieces(Color1, Color2, Color), 
+    write(' '), put_code_color(0x255A, Color), print_n_code(Size, 0x2550, Color), put_code_color(0x255D, Color), nl, nl.

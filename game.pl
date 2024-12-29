@@ -8,7 +8,7 @@
 
 % Menu ------------------------------------------------------------------------------------------------
 state(initial, Color1, Color2) :-
-    print_banner(menu), 
+    print_banner(menu, Color1, Color2), 
     read_option(Option, 3),
     transition(initial, Option, NextState), 
     state(NextState, Color1, Color2). 
@@ -21,9 +21,9 @@ state(mode, Color1, Color2) :-
 
 state(colors, Color1, Color2):-
     print_banner(colors, 1),
-    print_banner(colors, 2),  
+    print_banner(colors, 2), nl,
     read_input_colors(Color11, Color22),
-    print_banner(display_colors, Color11, Color22),
+    print_banner(display_colors, Color11, Color22), nl,
     state(initial, Color11, Color22).
 
 state(play_uu, Color1, Color2) :-
@@ -107,7 +107,7 @@ play_game(Mode, Color1, Color2):-
 
 play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2]) :-
     value([Player, Board, Levels, OtherPlayer, MovesLeft], Ratio),
-    display_game([Player, Board, Levels, Color1, Color2, Ratio]),  
+    display_game([Player, Board, Levels, Color1, Color2, Ratio, MovesLeft]),  
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     ( Winner = 'T' ->                  
         write('Game tied!'),nl,
@@ -176,7 +176,6 @@ read_option(Option, N) :-
 
 
 read_input(N, X, Y, Levels, Color1, Color2) :-
-    display_pieces(Color1, Color2),
     write('Choose the type of block (1-4): '),
     validate_input_type(N), nl,
     read_input_coordinates(X, Y, Levels), nl.
