@@ -89,7 +89,7 @@ print_banner(level, N):-
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_banner_starter:-
+print_banner(starter):-
     Size is 60, Symbol = 0x2551, 
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
@@ -101,11 +101,11 @@ print_banner_starter:-
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_banner_pcVspc:-
+print_banner(pcVspc):-
     Size is 60, Symbol = 0x2551, 
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('What type of Pc battle you want to see?', Symbol, Size),
+    write(' '), word('What type of battle you want to see?', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     write(' '), word('1 -> Pc AI 1 Vs Pc AI 1', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
@@ -149,15 +149,15 @@ print_banner(display_colors, Color1, Color2):-
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 
-print_banner(final, Winner, Loser):-
+print_banner(final, Winner, Color1, Color2):-
+    (Winner = 'p1' -> Text = 'Player 1', Color = Color1; Winner = 'p2' -> Text = 'Player 2', Color = Color2),
+  
     Size is 60, Symbol = 0x2551,
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
-    write(' '), line(1, Symbol, Size), 
-    write(' '), word('Colors', Symbol, Size),
-    write(' '), line(1, Symbol, Size), 
-    write(' '), put_code_color(0x2551, white), print_n(11, ' '),
-    write('Player 1 -> '), display_code('W', Color1), display_code('W', Color1), print_n(10, ' '),
-    write('Player 2 -> '), display_code('B', Color2), display_code('B', Color2), print_n(11, ' '), put_code_color(0x2551, white), nl,
+    write(' '), line(1, Symbol, Size),
+    write(' '), word_color_2('Winner: ', white, Text, Color, Symbol, Size),
+    write(' '), line(1, Symbol, Size), write(' '), line(1, Symbol, Size),
+    write(' '), word('1 -> Play again               2 -> Exit ', Symbol, Size),
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -263,12 +263,13 @@ display_levels([Cell | Rest]) :- write(Cell), write(Cell), display_levels(Rest).
 
 
  display_player_moves(Player, Moves, Color):-
-    (Player = 'p1' -> Text = 'Player 1'; Player = 'p2' -> Text = 'Player 2'),
+    (Player = 'p1' -> Text = 'Player 1', Code = 0x2593; Player = 'p2' -> Text = 'Player 2', Code = 0x2592),
+    atom_length(Text, TextSize), (Moves < 10 -> MoveSize = 1; MoveSize = 2), 
+    Size is 73-42-TextSize-MoveSize,
 
-    atom_length(Text, TextSize), (Moves < 10 -> MoveSize = 1; MoveSize = 2),
-    Size is 73-6-TextSize-12-MoveSize-22-2,
-    write(' '), put_code_color(0x2551, Color),  write(' '), write(' '),
-    write('Turn: '), write_color(Text, Color), print_n(22, ' '), write('Moves left: '), write(Moves),
+    write(' '), put_code_color(0x2551, Color), write(' '), write(' '),
+    write('Turn: '), write_color(Text, Color), write(' '), put_code_color(Code, Color), put_code_color(Code, Color),
+    print_n(19, ' '), write('Moves left: '), write(Moves),
     print_n(Size, ' '), put_code_color(0x2551, Color), nl.
 
 display_pieces(Color1, Color2, Color):-
