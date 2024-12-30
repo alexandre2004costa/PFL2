@@ -230,7 +230,7 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
 
 % Game ------------------------------------------------------------------------------------------
 valid_moves(Board, Levels, Moves) :-
-    findall([N, X, Y], (
+    setof([N, X, Y], (
         generate_coordinates(1, 4, N),
         generate_coordinates(1, 9, X),
         generate_coordinates(1, 9, Y),
@@ -462,11 +462,11 @@ block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], B
     ).
 
 
-choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRatio) :-
+choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], 0.3) :-
     %write('Playing random'),nl,
     random_move(Board, Levels, N, X, Y),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),     
-    value(NewGameState, MoveRatio).
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState).     
+    %value(NewGameState, MoveRatio).
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio) :-
     %write('Playing intel'),nl,
