@@ -323,14 +323,10 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
 value([Player, Board, Levels, OtherPlayer, 0], 0.5).
     
 value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
-    write('In value'),
     NumRC is 1,
     (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
     valid_moves(Board, Levels, Moves),
-    write([Player, Board, Levels, OtherPlayer, MovesLeft]), write(Moves),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], 'p1', Moves, WMove),
-    %is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], 'p2', Moves, BMove),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
     %write([WMove, WWin]), write([BMove, BWin]), write(Player),
     (  WMove \= none, Player = 'p2' ->
         Compensation = 0.15
@@ -376,9 +372,9 @@ move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Safe):
     valid_moves(Board2, Levels2, Moves),
     write(Moves),
     write([Player2, Board2, Levels2, OtherPlayer2, MovesLeft2]),
-    %is_any_winning_move([Player2, Board2, Levels2, OtherPlayer2, MovesLeft2], Moves, [WMove, WWin], [BMove, BWin]),
-    %write([WMove, WWin]), write([BMove, BWin]),
-    %write('OOOOOOVER'),
+    is_any_winning_move([Player2, Board2, Levels2, OtherPlayer2, MovesLeft2], Moves, [WMove, WWin], [BMove, BWin]),
+    write([WMove, WWin]), write([BMove, BWin]),
+    write('OOOOOOVER'),
     %write([WMove, WWin]),write([BMove, BWin]),
     (
         %write('down'),
@@ -393,33 +389,58 @@ move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Safe):
 testeY:-
     B = [['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','W','B','S','S','S','S'],['S','S','S','S','B','W','S','S','S','S'],['S','S','S','S','S','S','W','W','W','W'],['S','S','S','S','S','S','B','B','B','B'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S']],
     L = [[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,1,0,0,0,0],[0,0,0,0,1,1,0,0,0,0],[0,0,0,0,0,0,1,1,1,1],[0,0,0,0,0,0,1,1,1,1],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]],
-    valid_moves(B, L, Moves),
-    write(Moves),
-    value(['p1',B,L,'p2',52], Value),write(Value),nl.
-    %is_any_winning_move(['p1',B,L,'p2',52], Moves, [WMove, WWin], [BMove, BWin]),
-    %write([WMove, WWin]), write([BMove, BWin]).
+    board(Bo),
+    levels(Le),
+    valid_moves(Bo, Le, Moves),
+    %write(Moves),
+    %value(['p1',Bo,Le,'p2',52], Value),write(Value),nl.
+    is_any_winning_move(['p1',Bo,Le,'p2',52], [[1,1,1], [1,1,3], [1,1,5]], [WMove, WWin], [BMove, BWin]),
+    write([WMove, WWin]), write([BMove, BWin]),
+    write('End').
 
 
-is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], PlayerWanted,[Move], MoveWinner):-
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], [WMove, WWin], [BMove, BWin]):-
     (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner),
     (
-        Winner = PlayerWanted ->
-            MoveWinner = Move                  
+        Winner = WhiteWinner ->
+            WMove = Move,
+            WWin = true,
+            BMove = none,
+            BWin = false
     ;
+        Winner = BlackWinner ->
+            WMove = none,
+            WWin = false,
+            BMove = Move,
+            BWin = true
+    ;
+        WMove = none,
+        WWin = false,
+        BMove = none,
+        BWin = false
+    ).
 
-        MoveWinner = none
-    ).    
-
-is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], PlayerWanted,[Move|Moves], MoveWinner):-
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
     (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]),
     (
-        Winner = PlayerWanted ->
-            MoveWinner = Move                  
+        Winner = WhiteWinner ->
+            WMove = Move,
+            WWin = true
     ;
-        is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], PlayerWanted, Moves, MoveWinner)
-    ). 
+        WMove = NextWMove,
+        WWin = NextWWin
+    ),
+    (
+        Winner = BlackWinner ->
+            BMove = Move,
+            BWin = true
+    ;
+        BMove = NextBMove,
+        BWin = NextBWin
+    ).
 
 winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner):-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, OtherGameState),
@@ -452,9 +473,7 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRat
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio) :-
     %write('Playing intel'),nl,
     valid_moves(Board, Levels, Moves),
-    %is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], 'p1', Moves, WMove),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], 'p2', Moves, BMove),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
     %write([WMove, WWin]), write([BMove, BWin]), write(Player),
     (
         Player = 'p1', WMove \= none ->
