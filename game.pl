@@ -495,27 +495,27 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio)
         MoveRatio = BlockerMoveRatio
     ;
         best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, BestMoveRatio),
+        nl, write('Move to play'), write(BestMove), nl,
         Move = BestMove,
         MoveRatio = BestMoveRatio
     ).
 
-best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, MoveRatio):-
+best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, Move, MoveRatio):-
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, BestMoveRatio),
     write('best move: '), write(BestMove), nl,
-    move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, Safe),
-    write('Sffe'), write(Safe), 
-    %(
-    %    move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, Safe), 
-    %    Safe = false,
-    %    exclude(=(BestMove), Moves, RemainingMoves),
-    %    write('Blocking unsafe move: '), write(BestMove), nl,
-    %    best_move([Player, Board, Levels, OtherPlayer, MovesLeft], RemainingMoves, SafeMove, SafeMoveRatio),
-    %    Move = SafeMove,
-    %    MoveRatio = SafeMoveRatio
-    %;
+    %move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, Safe),
+    %write('Sffe'), write(Safe), 
+    (
+        move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, false), 
+        exclude(=(BestMove), Moves, RemainingMoves),
+        write('Blocking unsafe move: '), write(BestMove), nl,
+        best_move([Player, Board, Levels, OtherPlayer, MovesLeft], RemainingMoves, SafeMove, SafeMoveRatio),
+        Move = SafeMove,
+        MoveRatio = SafeMoveRatio
+    ;
         Move = BestMove,
-        MoveRatio = BestMoveRatio.
-    %).
+        MoveRatio = BestMoveRatio
+    ).
 
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move, MoveRatio):-
