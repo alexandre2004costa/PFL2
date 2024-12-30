@@ -400,16 +400,15 @@ testeY:-
 
 
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], [WMove, WWin], [BMove, BWin]):-
-    (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner),
     (
-        Winner = WhiteWinner ->
+        Winner = 'p1' ->
             WMove = Move,
             WWin = true,
             BMove = none,
             BWin = false
     ;
-        Winner = BlackWinner ->
+        Winner = 'p2' ->
             WMove = none,
             WWin = false,
             BMove = Move,
@@ -422,11 +421,10 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], [WM
     ).
 
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
-    (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]),
     (
-        Winner = WhiteWinner ->
+        Winner = 'p1' ->
             WMove = Move,
             WWin = true
     ;
@@ -434,7 +432,7 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves
         WWin = NextWWin
     ),
     (
-        Winner = BlackWinner ->
+        Winner = 'p2' ->
             BMove = Move,
             BWin = true
     ;
@@ -444,8 +442,8 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves
 
 winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner):-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, OtherGameState),
-    write(Move),nl,
     game_over(OtherGameState, Winner).
+    %write(Winner),nl.
 
 block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], BlockerMove, MoveRatio) :-
     (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer ; WhiteWinner = OtherPlayer, BlackWinner = Player),
@@ -504,8 +502,8 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio)
 best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, MoveRatio):-
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, BestMoveRatio),
     write('best move: '), write(BestMove), nl,
-    %move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, Safe),
-    %write('Sffe'), write(Safe), 
+    move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, Safe),
+    write('Sffe'), write(Safe), 
     %(
     %    move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, Safe), 
     %    Safe = false,

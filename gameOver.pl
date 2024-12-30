@@ -82,14 +82,7 @@ dfs(Board, [Col, Row], VisitedIn, Color, VisitedOut, Success) :-
 game_over([Player, [FirstLine|Board], Levels, OtherPlayer, 0],  'T'). % Tie in case of no moves left
 
 game_over([Player, [FirstLine|Board], Levels, OtherPlayer, MovesPlayed], Winner) :-
-    process_line([FirstLine|Board], 10, FirstLine, 1, 'W', [], WhiteWins),
-    process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B', [], BlackWins),
-    ( WhiteWins, BlackWins -> 
-        Winner = 'T' 
-    ; WhiteWins -> 
-        Winner = 'W' 
-    ; BlackWins -> 
-        Winner = 'B' 
-    ; 
-        Winner = none 
+    ( process_line([FirstLine|Board], 10, FirstLine, 1, 'W', [],  true) -> Winner = 'p1'
+    ; process_column([FirstLine|Board], 1, [FirstLine|Board], 1, 'B',[], true) -> Winner = 'p2'
+    ; Winner = none
     ).
