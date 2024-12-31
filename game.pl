@@ -8,7 +8,7 @@
 
 % Menu ------------------------------------------------------------------------------------------------
 state(initial, Color1, Color2) :-
-    print_banner(menu), 
+    print_banner(menu, Color1, Color2), 
     read_option(Option, 3),
     transition(initial, Option, NextState), 
     state(NextState, Color1, Color2). 
@@ -21,9 +21,9 @@ state(mode, Color1, Color2) :-
 
 state(colors, Color1, Color2):-
     print_banner(colors, 1),
-    print_banner(colors, 2),  
+    print_banner(colors, 2), nl,
     read_input_colors(Color11, Color22),
-    print_banner(display_colors, Color11, Color22),
+    print_banner(display_colors, Color11, Color22), nl,
     state(initial, Color11, Color22).
 
 state(play_uu, Color1, Color2) :-
@@ -36,13 +36,13 @@ state(play_uc, Color1, Color2) :-
     state(NextState, Option, Color1, Color2).
 
 state(play_uc_choose_start, LastOption, Color1, Color2):-
-    print_banner_starter,
+    print_banner(starter),
     read_option(Option, 2),
     transition(play_uc_choose_start, LastOption, Option, NextState), 
     state(NextState, Color1, Color2).
 
 state(play_cc, Color1, Color2) :-
-    print_banner_pcVspc,
+    print_banner(pcVspc),
     read_option(Option, 4),
     transition(play_cc, Option, NextState), 
     state(NextState, Color1, Color2).
@@ -71,6 +71,11 @@ state(levelCC21, Color1, Color2) :-
 state(levelCC22, Color1, Color2) :-
     play_game('Pc_2VsPc_2', Color1, Color2).
 
+state(winner, Color1, Color2) :-
+    read_option(Option, 2),
+    transition(winner, Option, NextState), 
+    state(NextState, Color1, Color2).
+
 state(exit, Color1, Color2) :-
     write('Exiting...'), nl, nl. 
 
@@ -91,6 +96,8 @@ transition(play_cc, 1, levelCC11).
 transition(play_cc, 2, levelCC12).
 transition(play_cc, 3, levelCC21).
 transition(play_cc, 4, levelCC22).
+transition(winner, 1, initial).
+transition(winner, 2, exit).
 transition(_, _, initial). 
 
 
@@ -105,78 +112,104 @@ play_game(Mode, Color1, Color2):-
     initial_state(['p1','p2'], [P1, Board, Levels, P2, MovesLeft]),
     play_turn(Mode, [P1, Board, Levels, P2, MovesLeft, Color1, Color2], 0.5).
 
-play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], MoveRatio) :-  
+
+play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], MoveRatio) :- 
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     (Winner = 'p1' -> FinalRatio = 1 ; Winner = 'p2' -> FinalRatio = 0 ; FinalRatio = MoveRatio),
-    display_game([Player, Board, Levels, Color1, Color2, FinalRatio]),write(MovesLeft),nl,write(FinalRatio),
+    display_game([Player, Board, Levels, Color1, Color2, FinalRatio, MovesLeft]),
     ( Winner = 'T' ->                  
         write('Game tied!'),nl,
         state(initial, Color1, Color2)
     ;   
         Winner \= none ->                  
-        format("~w venceu o jogo!~n", [Winner]),nl,
-        state(initial, Color1, Color2)
+        %format("~w venceu o jogo!~n", [Winner]),nl,
+        print_banner(final, Winner, Color1, Color2),
+        state(winner, Color1, Color2)
     ;
-        what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, NewMoveRatio),
-        move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
-        play_turn(Mode, NewState, NewMoveRatio)
+        what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, NewMoveRatio, Exit),
+        (
+        Exit = false ->
+            move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
+            play_turn(Mode, NewState, NewMoveRatio)
+        ;
+            print_banner(final, OtherPlayer, Color1, Color2),
+            state(winner, Color1, Color2)
+        )
     ).
 
-what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    read_input(N,X,Y, Levels, Color1, Color2),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
-    value(NewGameState, MoveRatio).
+what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+    (Exit = true -> MoveRatio = 0
+    ;
+        check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        value(NewGameState, MoveRatio)
+    ).
 
-what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    read_input(N,X,Y, Levels, Color1, Color2),
-    check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
-    value(NewGameState, MoveRatio).
+    
 
-what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+    (Exit = true -> MoveRatio = 0
+    ;
+        check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        value(NewGameState, MoveRatio)
+    ).
+
+what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    read_input(N,X,Y, Levels, Color1, Color2),
-    check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
-    value(NewGameState, MoveRatio).
+what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+    (Exit = true -> MoveRatio = 0
+    ;
+        check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        value(NewGameState, MoveRatio)
+    ).
 
-what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    read_input(N,X,Y, Levels, Color1, Color2),
-    check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
-    value(NewGameState, MoveRatio).
+what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+    (Exit = true -> MoveRatio = 0
+    ;
+        check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        value(NewGameState, MoveRatio)
+    ).
 
-what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, 'p1', MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
-    read_input(N,X,Y, Levels, Color1, Color2),
-    check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
-    value(NewGameState, MoveRatio).
+what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+    (Exit = true -> MoveRatio = 0
+    ;
+        check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        value(NewGameState, MoveRatio)
+    ).
 
 
-what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_1VsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_1VsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_2VsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_2VsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
+what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
     choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
+
 
 
 % Validate Inputs --------------------------------------------------------------------------------------
@@ -186,19 +219,22 @@ read_option(Option, N) :-
     (integer(Input), Input > 0, Input =< N -> Option is Input, nl; write('Invalid input. '), read_option(Option, N)).
 
 
-read_input(N, X, Y, Levels, Color1, Color2) :-
-    display_pieces(Color1, Color2),
-    write('Choose the type of block (1-4): '),
-    validate_input_type(N), nl,
-    read_input_coordinates(X, Y, Levels), nl.
+read_input(N, X, Y, Levels, Color1, Color2, Exit) :-
+    write('Choose the type of block (1-4) or type "exit" to give up: '),
+    validate_input_type(N, Exit2), nl, Exit = Exit2,
+    (Exit2 = false -> read_input_coordinates(X, Y, Levels), nl; Exit2 = true -> !).
 
 
-validate_input_type(N) :-
+validate_input_type(N, Exit) :-
     read(InputN),
-    integer(InputN), InputN >= 1, InputN =< 4, N = InputN, !.
-validate_input_type(N) :-
-    write('Invalid. Choose a number between 1 and 4. '),
-    validate_input_type(N).
+    (integer(InputN), InputN >= 1, InputN =< 4 -> N = InputN, Exit = false
+    ;
+     InputN = 'exit' -> Exit = true
+    ), !.
+
+validate_input_type(N, Exit) :-
+    write('Invalid. Choose a number between 1 and 4 or type exit.'),
+    validate_input_type(N, Exit).
 
 
 read_input_coordinates(X, Y, Levels) :-
@@ -225,7 +261,6 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
         write('Invalid coordinates. Try again.'), nl,
         read_input_coordinates(X, Y, Levels)
     ).
-
 
 % Game ------------------------------------------------------------------------------------------
 valid_moves(Board, Levels, Moves) :-
