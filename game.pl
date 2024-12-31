@@ -118,14 +118,13 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2],
         state(initial, Color1, Color2)
     ;
         what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, NewMoveRatio),
-        %write([N, X, Y]),
         move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
         play_turn(Mode, NewState, NewMoveRatio)
     ).
 
 what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
     read_input(N,X,Y, Levels, Color1, Color2),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState), 
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
     value(NewGameState, MoveRatio).
 
 what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio):-
@@ -386,17 +385,6 @@ move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Safe):
         Safe = true
     ).
 
-testeY:-
-    B = [['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','W','B','S','S','S','S'],['S','S','S','S','B','W','S','S','S','S'],['S','S','S','S','S','S','W','W','W','W'],['S','S','S','S','S','S','B','B','B','B'],['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S']],
-    L = [[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,1,0,0,0,0],[0,0,0,0,1,1,0,0,0,0],[0,0,0,0,0,0,1,1,1,1],[0,0,0,0,0,0,1,1,1,1],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]],
-    board(Bo),
-    levels(Le),
-    valid_moves(Bo, Le, Moves),
-    %write(Moves),
-    %value(['p1',Bo,Le,'p2',52], Value),write(Value),nl.
-    is_any_winning_move(['p1',Bo,Le,'p2',52], [[1,1,1], [1,1,3], [1,1,5]], [WMove, WWin], [BMove, BWin]),
-    write([WMove, WWin]), write([BMove, BWin]),
-    write('End').
 
 
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], [WMove, WWin], [BMove, BWin]):-
@@ -462,11 +450,10 @@ block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], B
     ).
 
 
-choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], 0.3) :-
-    %write('Playing random'),nl,
+choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRatio) :-
     random_move(Board, Levels, N, X, Y),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState).     
-    %value(NewGameState, MoveRatio).
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+    value(NewGameState, MoveRatio).
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio) :-
     %write('Playing intel'),nl,
