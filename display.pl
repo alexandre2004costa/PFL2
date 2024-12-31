@@ -294,6 +294,7 @@ display_pieces(Color1, Color2, Color):-
 
 
 display_game([Player, Board, Levels, Color1, Color2, Ratio, MovesLeft]):-
+    write([Player, Board, Levels, Color1, Color2, Ratio, MovesLeft]),
     display_board(Board, Levels, Color1, Color2, Ratio), nl,
 
     Size is 73, Symbol = 0x2551, (Player = 'p1' -> Color = Color1; Player = 'p2' -> Color = Color2),
