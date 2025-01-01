@@ -105,7 +105,7 @@ game_over([_, [_ | _], _, _, 0], 'T') :- !. % No left moves, tie.
 game_over([_, [_ | _], _, _, MovesPlayed], none) :-  % They need to play at least 5 moves to win
     MovesPlayed > 49, !.
 
-game_over([_, [FirstLine | Board], _, _, _], Result) :- % Checks for a win condition for both players.
+game_over([_, [FirstLine | Board], _, _, _], Result) :- % Checks for a win condition for both players
     process_line([FirstLine | Board], 10, FirstLine, 1, [], Stack1),
     dfs([FirstLine | Board], 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, Success), !,
