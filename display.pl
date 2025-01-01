@@ -1,17 +1,17 @@
 
 % print_n(+Number, +Char)
 % Prints a character a specified number of times
-print_n(0,S):-!.
+print_n(0,_):-!.
 print_n(N,S):- N1 is N-1, print_n(N1, S), put_char(S).
 
 % print_n_code(+Number, +Code, +Color)
 % Prints a character of a code a specified number of times with a specific color
-print_n_code(0, S, Color):-!.
+print_n_code(0, _, _):-!.
 print_n_code(N, S, Color):- N1 is N-1, print_n_code(N1, S, Color), put_code_color(S, Color).
 
 % line(+Number, +Symbol, +Padding)
 % -----------------------Prints a vertical line of a symbol with specified padding
-line(0,S,P):-!.
+line(0, _, _):-!.
 line(X,S,P):- X1 is X-1, put_code_color(S, white), print_n(P,' '), put_code_color(S, white), nl, line(X1,S,P).
 
 % word(+Text, +Symbol, +Size)
@@ -174,20 +174,20 @@ print_numbers(N):-
     write(N), write(' '), 
     N2 is N+1, print_numbers(N2).
 
-level_color(Ratio, Row, Color1, Color2, 1) :-
+level_color(Ratio, Row, 1) :-
     RatioNorm is round(Ratio * 12), % Normalization 
     Row =< RatioNorm.
 
-level_color(Ratio, Row, Color1, Color2, 2) :-
+level_color(Ratio, Row, 2) :-
     RatioNorm is round(Ratio * 12), % Normalization
     Row > RatioNorm.
 
 
 % Board
-display_board([], _, Color1, Color2, Ratio) :- !.
+display_board([], _, _, _, _) :- !.
 display_board([Row | Rest], Levels, Color1, Color2, Ratio) :-
-    level_color(Ratio, 12, Color1, Color2, N1), (N1 = 1 -> ColorRow1 = Color1, Code1 = 0x2593; N1 = 2 -> ColorRow1 = Color2, Code1 = 0x2592),
-    level_color(Ratio, 1, Color1, Color2, N12), (N12 = 1 -> ColorRow12 = Color1, Code12 = 0x2593; N12 = 2 -> ColorRow12 = Color2, Code12 = 0x2592),
+    level_color(Ratio, 12, N1), (N1 = 1 -> ColorRow1 = Color1, Code1 = 0x2593; N1 = 2 -> ColorRow1 = Color2, Code1 = 0x2592),
+    level_color(Ratio, 1, N12), (N12 = 1 -> ColorRow12 = Color1, Code12 = 0x2593; N12 = 2 -> ColorRow12 = Color2, Code12 = 0x2592),
 
     length(Row, L), Length is L*2, Len is Length + 6, RowsLen is 11, N is 1, 
     print_n(5,' '), put_code_color(0x250C, white), print_n_code(Len, 0x2500, white), put_code_color(0x2510, white),
@@ -211,7 +211,7 @@ display_board([Row | Rest], Levels, Color1, Color2, Ratio) :-
     print_n(10, ' '), print_numbers(N), print_n(24, ' '), print_numbers(N), nl.
 
 
-display_board_rows([], _, _, Color1, Color2, Ratio) :- !.
+display_board_rows([], _, _, _, _, _) :- !.
 display_board_rows([Row | Rest], [RowLevel | RestLevel], RowsLen, Color1, Color2, Ratio) :-
     RowNumber is RowsLen-1,
     display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio),
@@ -219,7 +219,7 @@ display_board_rows([Row | Rest], [RowLevel | RestLevel], RowsLen, Color1, Color2
 
 display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
     RowNumber1 is RowNumber+1, RowNumber < 10,
-    level_color(Ratio, RowNumber1, Color1, Color2, N), (N = 1 -> ColorRow = Color1, Code = 0x2593; N = 2 -> ColorRow = Color2, Code = 0x2592),
+    level_color(Ratio, RowNumber1, N), (N = 1 -> ColorRow = Color1, Code = 0x2593; N = 2 -> ColorRow = Color2, Code = 0x2592),
 
     % Board 
     print_n(3,' '), write(RowNumber), write(' '), put_code_color(0x2502, white), write(' '), put_code_color(0x2592, Color2), put_code_color(0x2592, Color2),
@@ -237,7 +237,7 @@ display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
 
 display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
     RowNumber1 is RowNumber+1,
-    level_color(Ratio, RowNumber1, Color1, Color2, N), (N = 1 -> ColorRow = Color1, Code = 0x2593; N = 2 -> ColorRow = Color2, Code = 0x2592),
+    level_color(Ratio, RowNumber1, N), (N = 1 -> ColorRow = Color1, Code = 0x2593; N = 2 -> ColorRow = Color2, Code = 0x2592),
 
     % Board
     print_n(5,' '), put_code_color(0x2502 , white), write(' '), put_code_color(0x2592 , Color2), put_code_color(0x2592, Color2),
@@ -253,15 +253,15 @@ display_row(Row, RowLevel, RowNumber, Color1, Color2, Ratio) :-
     put_code_color(0x2592, Color2), put_code_color(0x2592, Color2), write(' '), put_code_color(0x2502, white),
     nl.
 
-display_cells([], Color1, Color2) :- !.
+display_cells([], _, _) :- !.
 display_cells([Cell | Rest], Color1, Color2) :-
     display_code(Cell, Color1, Color2),
     display_code(Cell, Color1, Color2),
     display_cells(Rest, Color1, Color2).
 
-display_code('S',Color1, Color2):- put_code_color(0x2588, white).
-display_code('W',Color1, Color2):- put_code_color(0x2593, Color1).
-display_code('B',Color1, Color2):- put_code_color(0x2592, Color2).
+display_code('S', _, _):- put_code_color(0x2588, white).
+display_code('W',Color1, _):- put_code_color(0x2593, Color1).
+display_code('B', _, Color2):- put_code_color(0x2592, Color2).
 
 display_levels([]) :- !.
 display_levels([Cell | Rest]) :- write(Cell), write(Cell), display_levels(Rest).
@@ -301,7 +301,7 @@ display_pieces(Color1, Color2, Color):-
 display_game([Player, Board, Levels, Color1, Color2, Ratio, MovesLeft]):-
     display_board(Board, Levels, Color1, Color2, Ratio), nl,
 
-    Size is 73, Symbol = 0x2551, (Player = 'p1' -> Color = Color1; Player = 'p2' -> Color = Color2),
+    Size is 73, (Player = 'p1' -> Color = Color1; Player = 'p2' -> Color = Color2),
     write(' '), put_code_color(0x2554, Color), print_n_code(Size, 0x2550, Color), put_code_color(0x2557, Color), nl,
     display_player_moves(Player, MovesLeft, Color),
     write(' '), put_code_color(0x2551, Color), print_n(Size, ' '), put_code_color(0x2551, Color), nl,
