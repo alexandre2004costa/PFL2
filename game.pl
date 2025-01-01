@@ -105,9 +105,9 @@ transition(_, _, initial).
 % Play ------------------------------------------------------------------------------------------------
 
 
-initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]):-
-    board(Board),  % Sets up the initial board.
-    levels(Levels). % Defines the initial levels.
+initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 50]):-
+    board2(Board),  % Sets up the initial board.
+    levels2(Levels). % Defines the initial levels.
 
 play :- state(initial, white, white).
 
