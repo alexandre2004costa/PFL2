@@ -361,7 +361,6 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
     (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
     valid_moves(Board, Levels, Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
-    %write([WMove, WWin]), write([BMove, BWin]), write(Player),
     (  WMove \= none, Player = 'p2' ->
         Compensation = 0.15
     ; BMove \= none, Player = 'p1' ->
@@ -385,41 +384,6 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
         Value is BaseValue + Compensation
     ),
     ClampedValue is max(0, min(1, Value)).
-
-
-value_next_move([Player, Board, Levels, OtherPlayer, MovesLeft], Value):-
-    NumRC is 1,
-    (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer; WhiteWinner = OtherPlayer, BlackWinner = Player),
-    (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
-    %max_count_row(Board, NumRC, Block, CountRowGood, NumRowGood),
-    max_count_col(Board, NumRC, Block, CountColGood, NumColGood),
-    max_count_row(Board, NumRC, OtherBlock, CountRowBad, NumRowBad),
-    %max_count_col(Board, NumRC, OtherBlock, CountColBad, NumColBad),
-
-    TotalCount is CountColGood + CountRowBad,
-    Value is CountColGood / TotalCount.  
-
-move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Safe):-
-    write('in allow'),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, [Player2, Board2, Levels2, OtherPlayer2, MovesLeft2]),
-    write('in allow3'),
-    valid_moves(Board2, Levels2, Moves),
-    write(Moves),
-    write([Player2, Board2, Levels2, OtherPlayer2, MovesLeft2]),
-    is_any_winning_move([Player2, Board2, Levels2, OtherPlayer2, MovesLeft2], Moves, [WMove, WWin], [BMove, BWin]),
-    write([WMove, WWin]), write([BMove, BWin]),
-    write('OOOOOOVER'),
-    %write([WMove, WWin]),write([BMove, BWin]),
-    (
-        %write('down'),
-        Player = 'p1', BWin -> Safe = false; 
-
-        %write('up'),
-        Player = 'p2', WWin -> Safe = false;
-
-        Safe = true
-    ).
-
 
 
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], [WMove, WWin], [BMove, BWin]):-
@@ -466,23 +430,6 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves
 winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner):-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, OtherGameState),
     game_over(OtherGameState, Winner).
-    %write(Winner),nl.
-
-block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], BlockerMove, MoveRatio) :-
-    (Player = 'p1' -> WhiteWinner = Player, BlackWinner = OtherPlayer ; WhiteWinner = OtherPlayer, BlackWinner = Player),
-    findall([Value, [N2, X, Y]], (
-        generate_coordinates(1, 4, N2),
-        \+ N2 = N,
-        check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N2, X, Y], NewGameState),
-        value(NewGameState, Value)
-
-    ), MovesWithValues),
-    write(MovesWithValues),
-    (Player = WhiteWinner ->
-        max_member([MoveRatio, BlockerMove], MovesWithValues) 
-    ;
-        min_member([MoveRatio, BlockerMove], MovesWithValues) 
-    ).
 
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRatio) :-
@@ -491,10 +438,8 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRat
     value(NewGameState, MoveRatio).
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio) :-
-    %write('Playing intel'),nl,
     valid_moves(Board, Levels, Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
-    %write([WMove, WWin]), write([BMove, BWin]), write(Player),
     (
         Player = 'p1', WMove \= none ->
         Move = WMove,
@@ -503,51 +448,20 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio)
         Player = 'p2', BMove \= none ->
         Move = BMove,
         MoveRatio = 0
+
     ;
-        Player = 'p2', WMove \= none ->
-        write('block p1 win'),
-        block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], WMove, BlockerMove, BlockerMoveRatio),
-        Move = BlockerMove,
-        MoveRatio = BlockerMoveRatio
-    ;
-        Player = 'p1', BMove \= none ->
-        write('block p2 win'),
-        block_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], BMove, BlockerMove, BlockerMoveRatio),
-        Move = BlockerMove,
-        MoveRatio = BlockerMoveRatio
-    ;
-        best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, BestMoveRatio),
-        nl, write('Move to play'), write(BestMove), nl,
+        choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, BestMoveRatio),
         Move = BestMove,
         MoveRatio = BestMoveRatio
     ).
-
-best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, Move, MoveRatio):-
-    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, BestMoveRatio),
-    write('best move: '), write(BestMove), nl,
-    %move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, Safe),
-    %write('Sffe'), write(Safe), 
-    (
-        move_allow_winning([Player, Board, Levels, OtherPlayer, MovesLeft], BestMove, false), 
-        exclude(=(BestMove), Moves, RemainingMoves),
-        write('Blocking unsafe move: '), write(BestMove), nl,
-        best_move([Player, Board, Levels, OtherPlayer, MovesLeft], RemainingMoves, SafeMove, SafeMoveRatio),
-        Move = SafeMove,
-        MoveRatio = SafeMoveRatio
-    ;
-        Move = BestMove,
-        MoveRatio = BestMoveRatio
-    ).
-
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move, MoveRatio):-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
-    value_next_move(NewGameState, MoveRatio).
+    value(NewGameState, MoveRatio).
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], BestMove, MoveRatio) :-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
-    value_next_move(NewGameState, NewMoveRatio),
-    write(Move), write(NewMoveRatio),
+    value(NewGameState, NewMoveRatio),
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, OtherMove, OtherMoveRatio),
     (Player = 'p1', NewMoveRatio > OtherMoveRatio -> BestMove = Move, MoveRatio = NewMoveRatio
     ; 
@@ -556,8 +470,6 @@ choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], 
         BestMove = OtherMove, MoveRatio = OtherMoveRatio
     ).
     
-
-
 
 move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, Color1, Color2]):-
     Moves1 is MovesLeft-1,
