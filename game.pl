@@ -30,7 +30,7 @@ state(play_uu, Color1, Color2) :-
     play_game('PlayerVsPlayer', Color1, Color2).
 
 state(play_uc, Color1, Color2) :-
-    print_banner_level(0),
+    print_banner_level,
     read_option(Option, 2),
     transition(play_uc, Option, NextState), 
     state(NextState, Option, Color1, Color2).
