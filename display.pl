@@ -1,36 +1,41 @@
-% Symbol               - Code
-% Left Top Corner      - 0x250C
-% Right Top Corner     - 0x2510
-% Left Bottom Corner   - 0x2514
-% Right Bottom Corner  - 0x2518
-% Horizontal line      - 0x2500
-% Vertical line        - 0x2502
- 
 
-% Printing
+% print_n(+Number, +Char)
+% Prints a character a specified number of times
 print_n(0,S):-!.
 print_n(N,S):- N1 is N-1, print_n(N1, S), put_char(S).
 
-print_n_code(0,S, Color):-!.
+% print_n_code(+Number, +Code, +Color)
+% Prints a character of a code a specified number of times with a specific color
+print_n_code(0, S, Color):-!.
 print_n_code(N, S, Color):- N1 is N-1, print_n_code(N1, S, Color), put_code_color(S, Color).
 
+% line(+Number, +Symbol, +Padding)
+% -----------------------Prints a vertical line of a symbol with specified padding
 line(0,S,P):-!.
 line(X,S,P):- X1 is X-1, put_code_color(S, white), print_n(P,' '), put_code_color(S, white), nl, line(X1,S,P).
 
+% word(+Text, +Symbol, +Size)
+% Prints a word centered with padding and surrounded by a symbol
 word(Text, Symbol, Size) :- atom_length(Text, TextSize), 
     Padding is (Size - TextSize - 2) // 2, PaddingRight is Size - TextSize - Padding, 
     put_code_color(Symbol, white), print_n(Padding, ' '), write(Text), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
 
+% word_color(+Text, +Color, +Symbol, +Size)
+% Prints a word centered with padding, with text in a specific color and surrounded by a symbol
 word_color(Text, Color, Symbol, Size) :- atom_length(Text, TextSize), 
     Padding is (Size - TextSize - 2) // 2, PaddingRight is Size - TextSize - Padding, 
     put_code_color(Symbol, white), print_n(Padding, ' '), write_color(Text, Color), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
 
+% word_color_2(+Text1, +Color1, +Text2, +Color2, +Symbol, +Size)
+% Prints two words centered with padding, each in a specific color, and surrounded by a symbol
 word_color_2(Text, Color, Text2, Color2, Symbol, Size) :- atom_length(Text, TextSize), atom_length(Text2, TextSize2), 
     Padding is (Size - TextSize - TextSize2 - 2) // 2, PaddingRight is Size - TextSize - TextSize2 - Padding, 
     put_code_color(Symbol, white), print_n(Padding, ' '), write_color(Text, Color),  write_color(Text2, Color2), print_n(PaddingRight, ' '), put_code_color(Symbol, white), nl.
 
 
 % Menu
+% print_title(+Size, +Symbol)
+% Prints a stylized title using a combination of text and symbols
 print_title(Size, Symbol) :- 
     atom_codes(Atom1, [124,32,39,47,39,96,92,32,92,124,32,124,32,91,32,32,124,32,91,32,96,46,45,46,32,124,47,32,47,39,96,92,39,32,93]),
     atom_concat('|  \\__/ || |  | |  | | | || ', '\\__/ |  ', Line1),
@@ -45,7 +50,7 @@ print_title(Size, Symbol) :-
     write(' '), word_color('                                |__] ', white, Symbol, Size).
 
 
-print_banner(menu, Color1, Color2):-
+print_banner_menu(Color1, Color2):-
     Size is 60, Symbol = 0x2551,
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
@@ -62,7 +67,7 @@ print_banner(menu, Color1, Color2):-
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl. 
 
-print_banner(play):-
+print_banner_play:-
     Size is 60, Symbol = 0x2551,
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
@@ -76,7 +81,7 @@ print_banner(play):-
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_banner(level, N):-
+print_banner_level(N):-
     Size is 60, Symbol = 0x2551, 
     (N = 0 -> Title = 'PC - AI Level'; N = 1 -> Title = 'Pc 1 - AI Level'; N = 2 -> Title = 'Pc 2 - AI Level'),
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
@@ -89,7 +94,7 @@ print_banner(level, N):-
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_banner(starter):-
+print_banner_starter:-
     Size is 60, Symbol = 0x2551, 
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
@@ -101,7 +106,7 @@ print_banner(starter):-
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_banner(pcVspc):-
+print_banner_pc:-
     Size is 60, Symbol = 0x2551, 
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
@@ -117,7 +122,7 @@ print_banner(pcVspc):-
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_banner(colors, N):-
+print_banner_colors(N):-
     Size is 60, Symbol = 0x2551,
     (N = 1 -> Title = 'Colors for Player 1', Letter = 'W'; N = 2 -> Title = 'Colors for Player 2', Letter = 'B'),
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
@@ -136,7 +141,7 @@ print_banner(colors, N):-
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
-print_banner(display_colors, Color1, Color2):-
+print_banner_display_colors(Color1, Color2):-
     Size is 60, Symbol = 0x2551,
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
@@ -149,7 +154,7 @@ print_banner(display_colors, Color1, Color2):-
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 
-print_banner(final, Winner, Color1, Color2):-
+print_banner_final(Winner, Color1, Color2):-
     (Winner = 'p1' -> Text = 'Player 1', Color = Color1; Winner = 'p2' -> Text = 'Player 2', Color = Color2),
   
     Size is 60, Symbol = 0x2551,

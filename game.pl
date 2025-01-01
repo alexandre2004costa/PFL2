@@ -8,41 +8,41 @@
 
 % Menu ------------------------------------------------------------------------------------------------
 state(initial, Color1, Color2) :-
-    print_banner(menu, Color1, Color2), 
+    print_banner_menu(Color1, Color2), 
     read_option(Option, 3),
     transition(initial, Option, NextState), 
     state(NextState, Color1, Color2). 
 
 state(mode, Color1, Color2) :-
-    print_banner(play),  
+    print_banner_play,  
     read_option(Option, 3),
     transition(mode, Option, NextState), 
     state(NextState, Color1, Color2). 
 
 state(colors, Color1, Color2):-
-    print_banner(colors, 1),
-    print_banner(colors, 2), nl,
+    print_banner_colors(1),
+    print_banner_colors(2), nl,
     read_input_colors(Color11, Color22),
-    print_banner(display_colors, Color11, Color22), nl,
+    print_banner_display_colors(Color11, Color22), nl,
     state(initial, Color11, Color22).
 
 state(play_uu, Color1, Color2) :-
     play_game('PlayerVsPlayer', Color1, Color2).
 
 state(play_uc, Color1, Color2) :-
-    print_banner(level, 0),
+    print_banner_level(0),
     read_option(Option, 2),
     transition(play_uc, Option, NextState), 
     state(NextState, Option, Color1, Color2).
 
 state(play_uc_choose_start, LastOption, Color1, Color2):-
-    print_banner(starter),
+    print_banner_starter,
     read_option(Option, 2),
     transition(play_uc_choose_start, LastOption, Option, NextState), 
     state(NextState, Color1, Color2).
 
 state(play_cc, Color1, Color2) :-
-    print_banner(pcVspc),
+    print_banner_pc,
     read_option(Option, 4),
     transition(play_cc, Option, NextState), 
     state(NextState, Color1, Color2).
@@ -123,7 +123,7 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2],
     ;   
         Winner \= none ->                  
         %format("~w venceu o jogo!~n", [Winner]),nl,
-        print_banner(final, Winner, Color1, Color2),
+        print_banner_final(Winner, Color1, Color2),
         state(winner, Color1, Color2)
     ;
         what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, NewMoveRatio, Exit),
@@ -132,7 +132,7 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2],
             move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
             play_turn(Mode, NewState, NewMoveRatio)
         ;
-            print_banner(final, OtherPlayer, Color1, Color2),
+            print_banner_final(OtherPlayer, Color1, Color2),
             state(winner, Color1, Color2)
         )
     ).
