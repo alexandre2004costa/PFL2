@@ -7,79 +7,79 @@
 
 
 % Menu ------------------------------------------------------------------------------------------------
+
+% state(+CurrentState, +Color1, +Color2)
+% Handles the current state of the game and transitions to the next state based on user input or game logic
+
+% Handles the initial state, allowing the user to choose to play, exit or change configurations
 state(initial, Color1, Color2) :-
     print_banner_menu(Color1, Color2), 
     read_option(Option, 3),
     transition(initial, Option, NextState), 
     state(NextState, Color1, Color2). 
 
+% Handles the mode state, allowing the user to choose a game mode
 state(mode, Color1, Color2) :-
     print_banner_play,  
     read_option(Option, 3),
     transition(mode, Option, NextState), 
     state(NextState, Color1, Color2). 
 
-state(colors, Color1, Color2):-
+% Handles the color state, allowing the user to choose custom colors for the game
+state(colors, _, _):-
     print_banner_colors(1),
     print_banner_colors(2), nl,
     read_input_colors(Color11, Color22),
     print_banner_display_colors(Color11, Color22), nl,
     state(initial, Color11, Color22).
 
-state(play_uu, Color1, Color2) :-
-    play_game('PlayerVsPlayer', Color1, Color2).
 
+% Handles the state for a player vs computer game mode
 state(play_uc, Color1, Color2) :-
     print_banner_level,
     read_option(Option, 2),
     transition(play_uc, Option, NextState), 
     state(NextState, Option, Color1, Color2).
 
-state(play_uc_choose_start, LastOption, Color1, Color2):-
-    print_banner_starter,
-    read_option(Option, 2),
-    transition(play_uc_choose_start, LastOption, Option, NextState), 
-    state(NextState, Color1, Color2).
-
+% Handles the state for a computer vs computer game mode
 state(play_cc, Color1, Color2) :-
     print_banner_pc,
     read_option(Option, 4),
     transition(play_cc, Option, NextState), 
     state(NextState, Color1, Color2).
 
-state(levelUC11, Color1, Color2) :-
-    play_game('PlayerVsPc_1', Color1, Color2).
-
-state(levelUC12, Color1, Color2) :-
-    play_game('Pc_1VsPlayer', Color1, Color2).
-
-state(levelUC21, Color1, Color2) :-
-    play_game('PlayerVsPc_2', Color1, Color2).
-
-state(levelUC22, Color1, Color2) :-
-    play_game('Pc_2VsPlayer', Color1, Color2).
-
-state(levelCC11, Color1, Color2) :-
-    play_game('Pc_1VsPc_1', Color1, Color2).
-
-state(levelCC12, Color1, Color2) :-
-    play_game('Pc_1VsPc_2', Color1, Color2).
-
-state(levelCC21, Color1, Color2) :-
-    play_game('Pc_2VsPc_1', Color1, Color2).
-
-state(levelCC22, Color1, Color2) :-
-    play_game('Pc_2VsPc_2', Color1, Color2).
-
+% Handles the state when a winner is declared
 state(winner, Color1, Color2) :-
     read_option(Option, 2),
     transition(winner, Option, NextState), 
     state(NextState, Color1, Color2).
 
-state(exit, Color1, Color2) :-
+% Handles the exit state, where the game ends.
+state(exit, _, _) :-
     write('Exiting...'), nl, nl. 
 
+% state(+CurrentState, +LastOption, +Color1, +Color2)
+% Handles the state where the player chooses whether they or the computer starts
+state(play_uc_choose_start, LastOption, Color1, Color2):-
+    print_banner_starter,
+    read_option(Option, 2),
+    transition(play_uc_choose_start, LastOption, Option, NextState), 
+    state(NextState, Color1, Color2).
 
+% State handlers for different levels of the game
+% Each level represents a specific game mode configuration
+state(play_uu, Color1, Color2) :- play_game('PlayerVsPlayer', Color1, Color2).
+state(levelUC11, Color1, Color2) :- play_game('PlayerVsPc_1', Color1, Color2).
+state(levelUC12, Color1, Color2) :- play_game('Pc_1VsPlayer', Color1, Color2).
+state(levelUC21, Color1, Color2) :- play_game('PlayerVsPc_2', Color1, Color2).
+state(levelUC22, Color1, Color2) :- play_game('Pc_2VsPlayer', Color1, Color2).
+state(levelCC11, Color1, Color2) :- play_game('Pc_1VsPc_1', Color1, Color2).
+state(levelCC12, Color1, Color2) :- play_game('Pc_1VsPc_2', Color1, Color2).
+state(levelCC21, Color1, Color2) :- play_game('Pc_2VsPc_1', Color1, Color2).
+state(levelCC22, Color1, Color2) :- play_game('Pc_2VsPc_2', Color1, Color2).
+
+% transition(+CurrentState, +Option, -NextState)
+% Defines state transitions based on the current state and user input
 transition(initial, 1, mode).  
 transition(initial, 2, colors).  
 transition(initial, 3, exit).  
@@ -87,7 +87,7 @@ transition(mode, 1, play_uu).
 transition(mode, 2, play_uc).  
 transition(mode, 3, play_cc).
 transition(mode, 4, initial).
-transition(play_uc, N, play_uc_choose_start).
+transition(play_uc, _, play_uc_choose_start).
 transition(play_uc_choose_start, 1, 1, levelUC11).
 transition(play_uc_choose_start, 1, 2, levelUC12).
 transition(play_uc_choose_start, 2, 1, levelUC21).
@@ -98,47 +98,50 @@ transition(play_cc, 3, levelCC21).
 transition(play_cc, 4, levelCC22).
 transition(winner, 1, initial).
 transition(winner, 2, exit).
-transition(_, _, initial). 
+transition(_, _, initial).
+
 
 
 % Play ------------------------------------------------------------------------------------------------
 
+
 initial_state([Player, OtherPlayer], [Player, Board, Levels, OtherPlayer, 54]):-
-    board(Board), levels(Levels).
+    board(Board),  % Sets up the initial board.
+    levels(Levels). % Defines the initial levels.
 
 play :- state(initial, white, white).
 
 play_game(Mode, Color1, Color2):-
-    initial_state(['p1','p2'], [P1, Board, Levels, P2, MovesLeft]),
+    initial_state(['p1', 'p2'], [P1, Board, Levels, P2, MovesLeft]),
     play_turn(Mode, [P1, Board, Levels, P2, MovesLeft, Color1, Color2], 0.5).
-
 
 play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], MoveRatio) :- 
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
     (Winner = 'p1' -> FinalRatio = 1 ; Winner = 'p2' -> FinalRatio = 0 ; FinalRatio = MoveRatio),
     display_game([Player, Board, Levels, Color1, Color2, FinalRatio, MovesLeft]),
     ( Winner = 'T' ->                  
-        write('Game tied!'),nl,
+        write('Game tied!'), nl,
         state(initial, Color1, Color2)
     ;   
-        Winner \= none ->                  
-        %format("~w venceu o jogo!~n", [Winner]),nl,
+        Winner \= none ->  % A player has won the game.                
         print_banner_final(Winner, Color1, Color2),
         state(winner, Color1, Color2)
     ;
+        % Game continues with the next move.
         what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, NewMoveRatio, Exit),
         (
-        Exit = false ->
+        Exit = false ->  % Player did not quit, proceed with the move.
             move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y], NewState),
             play_turn(Mode, NewState, NewMoveRatio)
         ;
+            % Player quit, other player wins.
             print_banner_final(OtherPlayer, Color1, Color2),
             state(winner, Color1, Color2)
         )
     ).
 
-what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
         check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
@@ -147,41 +150,41 @@ what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Colo
 
     
 
-what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
         check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
-what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
         check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
-what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
         check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
-what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('PlayerVsPc_2', ['p2', Board, Levels, _, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, 'p1', MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Color1, Color2, Exit),
+what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
         check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
@@ -189,25 +192,25 @@ what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, 
     ).
 
 
-what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_1VsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_1VsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_2VsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_2VsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, MoveRatio, false):-
+what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
     choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
 
 
@@ -219,7 +222,7 @@ read_option(Option, N) :-
     (integer(Input), Input > 0, Input =< N -> Option is Input, nl; write('Invalid input. '), read_option(Option, N)).
 
 
-read_input(N, X, Y, Levels, Color1, Color2, Exit) :-
+read_input(N, X, Y, Levels, Exit) :-
     write('Choose the type of block (1-4) or type "exit" to give up: '),
     validate_input_type(N, Exit2), nl, Exit = Exit2,
     (Exit2 = false -> read_input_coordinates(X, Y, Levels), nl; Exit2 = true -> !).
@@ -263,7 +266,7 @@ validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
     ).
 
 % Game ------------------------------------------------------------------------------------------
-valid_moves(Board, Levels, Moves) :-
+valid_moves(_, Levels, Moves) :-
     setof([N, X, Y], (
         generate_coordinates(1, 4, N),
         generate_coordinates(1, 9, X),
@@ -315,7 +318,7 @@ validate_coordinates(X, Y, Levels, Valid) :-
     %write('Above levels.'), nl, nl, 
     Valid is 1.
 
-validate_coordinates(X, Y, Levels, Valid) :-
+validate_coordinates(_, _, _, Valid) :-
     Valid is 0.
 
 
@@ -354,13 +357,13 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
     transposee(Board, TransposedBoard),
     max_count(TransposedBoard, NumRC, Block, -1, -1, CountCol, NumCol).
 
-value([Player, Board, Levels, OtherPlayer, 0], 0.5).
+value([_, _, _, _, 0], 0.5).
     
 value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
     NumRC is 1,
     (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
     valid_moves(Board, Levels, Moves),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, _], [BMove, _]),
     (  WMove \= none, Player = 'p2' ->
         Compensation = 0.15
     ; BMove \= none, Player = 'p1' ->
@@ -375,8 +378,8 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
         BMove \= none, Player = 'p2' ->                  
         Value = 0 
     ; 
-        max_count_col(Board, NumRC, Block, CountColGood, NumColGood),
-        max_count_row(Board, NumRC, OtherBlock, CountRowBad, NumRowBad),
+        max_count_col(Board, NumRC, Block, CountColGood, _),
+        max_count_row(Board, NumRC, OtherBlock, CountRowBad, _),
 
         TotalCount is CountColGood + CountRowBad,
         BaseValue is CountColGood / TotalCount,
@@ -439,7 +442,7 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRat
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio) :-
     valid_moves(Board, Levels, Moves),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, WWin], [BMove, BWin]),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, _], [BMove, _]),
     (
         Player = 'p1', WMove \= none ->
         Move = WMove,
@@ -484,7 +487,6 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], [N, X, Y],
     get_value(PieceConfig, 1, 1, V3),
 
     % Update board
-    get_value(Board, NewY, NewX, Value), % Para que serve isto?
     update_piece(Board, NewY, NewX, V0, Board1),
     update_piece(Board1, NewY, NewX+1, V1, Board2),
     update_piece(Board2, NewY+1, NewX, V2, Board3),
@@ -511,7 +513,6 @@ check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], [OtherPla
     get_value(PieceConfig, 1, 1, V3),
 
     % Update board
-    get_value(Board, NewY, NewX, Value), % Para que serve isto?
     update_piece(Board, NewY, NewX, V0, Board1),
     update_piece(Board1, NewY, NewX+1, V1, Board2),
     update_piece(Board2, NewY+1, NewX, V2, Board3),
