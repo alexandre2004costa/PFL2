@@ -47,13 +47,13 @@ process_line(Board, Y, [_ | Line], X, Stack, FinalStack) :-
 process_column(_, 11, _, _, Stack, Stack) :- !.
 
 % Adds a 'B' piece found in the column to the stack and continues processing
-process_column(Board, Y, [['B' | Line] | Lines], X, Stack, FinalStack) :-
+process_column(Board, Y, [['B' | _] | Lines], X, Stack, FinalStack) :-
     TempStack = [[X, Y] | Stack],
     Y1 is Y + 1,
     process_column(Board, Y1, Lines, X, TempStack, FinalStack), !.
 
 % Skips cells that are not 'B' and continues processing the column.
-process_column(Board, Y, [[_ | Line] | Lines], X, Stack, FinalStack) :-
+process_column(Board, Y, [[_ | _] | Lines], X, Stack, FinalStack) :-
     Y1 is Y + 1,
     process_column(Board, Y1, Lines, X, Stack, FinalStack), !.
 
@@ -84,15 +84,15 @@ dfs(Board, Color, [_ | Stack], Visited, LastVisited) :-
 % verify_white_win(+Visited, -Success)
 % Checks if any cell in the visited list belongs to the bottom row (indicating a white win)
 verify_white_win([], false).
-verify_white_win([[X, 0] | _], true).
-verify_white_win([[X, Y] | Visited], Success) :-
+verify_white_win([[_, 0] | _], true).
+verify_white_win([[_, _] | Visited], Success) :-
     verify_white_win(Visited, Success).
 
 % verify_black_win(+Visited, -Success)
 % Checks if any cell in the visited list belongs to the rightmost column (indicating a black win)
 verify_black_win([], false).
-verify_black_win([[11, Y] | _], true).
-verify_black_win([[X, Y] | Visited], Success) :-
+verify_black_win([[11, _] | _], true).
+verify_black_win([[_, _] | Visited], Success) :-
     verify_black_win(Visited, Success).
 
 % game_over(+GameState, -Result)
@@ -100,12 +100,12 @@ verify_black_win([[X, Y] | Visited], Success) :-
 % Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 
 %'p1' if white wins, 'p2' if black wins, or 'none' otherwise
 
-game_over([Player, [FirstLine | Board], Levels, OtherPlayer, 0], 'T') :- !. % No left moves, tie.
+game_over([_, [_ | _], _, _, 0], 'T') :- !. % No left moves, tie.
 
-game_over([Player, [FirstLine | Board], Levels, OtherPlayer, MovesPlayed], none) :-  % They need to play at least 5 moves to win
+game_over([_, [_ | _], _, _, MovesPlayed], none) :-  % They need to play at least 5 moves to win
     MovesPlayed > 49, !.
 
-game_over([Player, [FirstLine | Board], Levels, OtherPlayer, MovesPlayed], Result) :- % Checks for a win condition for both players.
+game_over([_, [FirstLine | Board], _, _, _], Result) :- % Checks for a win condition for both players.
     process_line([FirstLine | Board], 10, FirstLine, 1, [], Stack1),
     dfs([FirstLine | Board], 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, Success), !,
