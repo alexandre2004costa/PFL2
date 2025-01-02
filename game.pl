@@ -129,19 +129,8 @@ transition(winner, 2, exit).
 
 
 initial_state([Player, OtherPlayer, Color1, Color2, BoardSize, BoardStyle], [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]):-
-    (
-        BoardSize = 1, BoardStyle = 1 -> board11(Board), levels11(Levels), MovesLeft = 54
-    ;
-        BoardSize = 1, BoardStyle = 2 -> board12(Board), levels12(Levels), MovesLeft = 30
-    ;
-        BoardSize = 1, BoardStyle = 3 -> board13(Board), levels13(Levels), MovesLeft = 50
-    ;
-        BoardSize = 2, BoardStyle = 1 -> board21(Board), levels21(Levels), MovesLeft = 54 %mudar
-    ;
-        BoardSize = 2, BoardStyle = 2 -> board22(Board), levels22(Levels), MovesLeft = 54 %mudar
-    ;
-        BoardSize = 2, BoardStyle = 3 -> board23(Board), levels23(Levels), MovesLeft = 54 %mudar
-    ).
+    board(BoardSize, BoardStyle, Board, MovesLeft),
+    levels(BoardSize, BoardStyle, Levels).
 
 play :- state(initial, white, white, 1, 1).
 
