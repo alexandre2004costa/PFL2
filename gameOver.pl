@@ -1,11 +1,11 @@
 
-% is_valid_cell(+Board, +[Col, Row], +Color)
+% is_valid_cell(+Board, +BoardSize, +[Col, Row], +Color)
 % Checks if the specified cell ([Col, Row]) is valid for a piece of the given color 
-is_valid_cell(Board, [Col, Row], 'W') :-
+is_valid_cell(Board, NBoard, [Col, Row], 'W') :-
     Col2 is Col - 1, % Transformation to 0 index left-top coordenates 
-    Row2 is 10 - Row,
+    (NBoard = 1 -> Row2 is 10 - Row; NBoard = 2 -> Row2 is 8 - Row),
     Row2 >= 0,
-    Col2 =< 10,
+    (NBoard = 1 -> Col2 =< 10; NBoard = 2 -> Col2 =< 8),
     Col2 >= 0,
 
     (   
@@ -14,11 +14,11 @@ is_valid_cell(Board, [Col, Row], 'W') :-
         get_value(Board, Row2, Col2, 'W')
     ).
 
-is_valid_cell(Board, [Col, Row], 'B') :-
+is_valid_cell(Board, NBoard, [Col, Row], 'B') :-
     Col2 is Col - 1, % Transformation to 0 index left-top coordenates 
     Row2 is Row - 1,
     Row2 >= 0,
-    Row2 =< 10,
+    (NBoard = 1 -> Row2 =< 10; NBoard = 2 -> Row2 =< 8),
     Col2 >= 0,
     (
         (Col2 = 10, get_value(Board, Row2, 9, 'B')) % This is the right column where 'B' wins
@@ -62,29 +62,29 @@ process_column(Board, NBoard, Y, [[_ | _] | Lines], X, Stack, FinalStack) :-
     process_column(Board, NBoard, Y1, Lines, X, Stack, FinalStack), !.
 
 
-% dfs(+Board, +Color, +Stack, +Visited, -LastVisited)
+% dfs(+Board, +BoardSize, +Color, +Stack, +Visited, -LastVisited)
 % Performs a Depth-First Search (DFS) starting with the given stack 
 % Marks visited cells (Visited) and returns the final list of visited cells 
 
-dfs(_, _, [], Visited, Visited) :- !. % Base case for empty stack, no more cells to find
+dfs(_, _, _, [], Visited, Visited) :- !. % Base case for empty stack, no more cells to find
 
 % Adds a cell to the visited list and explores its neighbors if valid
-dfs(Board, Color, [[X, Y] | Stack], Visited, LastVisited) :-
+dfs(Board, NBoard, Color, [[X, Y] | Stack], Visited, LastVisited) :-
     \+ member([X, Y], Visited),
     NewVisited = [[X, Y] | Visited],
     NewY1 is Y - 1,
-    (is_valid_cell(Board, [X, NewY1], Color) -> NewStack1 = [[X, NewY1] | Stack] ; NewStack1 = Stack),
+    (is_valid_cell(Board, NBoard, [X, NewY1], Color) -> NewStack1 = [[X, NewY1] | Stack] ; NewStack1 = Stack),
     NewY2 is Y + 1,
-    (is_valid_cell(Board, [X, NewY2], Color) -> NewStack2 = [[X, NewY2] | NewStack1] ; NewStack2 = NewStack1),
+    (is_valid_cell(Board, NBoard, [X, NewY2], Color) -> NewStack2 = [[X, NewY2] | NewStack1] ; NewStack2 = NewStack1),
     NewX1 is X - 1,
-    (is_valid_cell(Board, [NewX1, Y], Color) -> NewStack3 = [[NewX1, Y] | NewStack2] ; NewStack3 = NewStack2),
+    (is_valid_cell(Board, NBoard, [NewX1, Y], Color) -> NewStack3 = [[NewX1, Y] | NewStack2] ; NewStack3 = NewStack2),
     NewX2 is X + 1,
-    (is_valid_cell(Board, [NewX2, Y], Color) -> NewStack = [[NewX2, Y] | NewStack3] ; NewStack = NewStack3),
-    dfs(Board, Color, NewStack, NewVisited, LastVisited).
+    (is_valid_cell(Board, NBoard, [NewX2, Y], Color) -> NewStack = [[NewX2, Y] | NewStack3] ; NewStack = NewStack3),
+    dfs(Board, NBoard, Color, NewStack, NewVisited, LastVisited).
 
 % Skips cells that are already visited and continues DFS
-dfs(Board, Color, [_ | Stack], Visited, LastVisited) :-
-    dfs(Board, Color, Stack, Visited, LastVisited).
+dfs(Board, NBoard, Color, [_ | Stack], Visited, LastVisited) :-
+    dfs(Board, NBoard, Color, Stack, Visited, LastVisited).
 
 
 % verify_white_win(+Visited, -Success)
@@ -117,11 +117,11 @@ game_over([_, [_ | _], _, _, MovesPlayed], NBoard, none) :-
 
 game_over([_, [FirstLine | Board], _, _, _, NBoard], Result) :- % Checks for a win condition for both players
     process_line([FirstLine | Board], NBoard, 10, FirstLine, 1, [], Stack1),
-    dfs([FirstLine | Board], 'W', Stack1, [], Visited), !,
+    dfs([FirstLine | Board], NBoard, 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, Success), !,
 
     process_column([FirstLine | Board], NBoard, 1, [FirstLine | Board], 1, [], Stack2),
-    dfs([FirstLine | Board], 'B', Stack2, [], Visited2), !,
+    dfs([FirstLine | Board], NBoard, 'B', Stack2, [], Visited2), !,
     verify_black_win(NBoard, Visited2, Success2), !,
 
     (Success, Success2 -> Result = 'T';
