@@ -111,17 +111,16 @@ verify_black_win(NBoard, [[_, _] | Visited], Success) :-
 % Determines the result of the game based on the game state and the board size
 % Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 
 %'p1' if white wins, 'p2' if black wins or 'none' otherwise
+game_over([_, [_ | _], _, _, 0, _, _, _, _], 'T') :- !. % No left moves, tie.
 
-game_over([_, [_ | _], _, _, 0, _], 'T') :- !. % No left moves, tie.
-
-game_over([_, [_ | _], _, _, MovesPlayed, _], none) :- 
+game_over([_, [_ | _], _, _, MovesPlayed, _, _, _, _], none) :- 
     (NBoard = 1 -> MovesPlayed > 49;    % Need at least 5 moves to win
      NBoard = 2 -> MovesPlayed > 26)     % Need at least 4 moves to win
     , !.
 
 
 
-game_over([_, [FirstLine | Board], _, _, _, 1], Result) :- % Checks for a win condition for both players
+game_over([_, [FirstLine | Board], _, _, _, _, _, 1, _], Result) :- % Checks for a win condition for both players
     process_line([FirstLine | Board], 1, 10, FirstLine, 1, [], Stack1),
     dfs([FirstLine | Board], 1, 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, Success), !,
@@ -135,7 +134,7 @@ game_over([_, [FirstLine | Board], _, _, _, 1], Result) :- % Checks for a win co
      Success2 -> Result = 'p2';
      Result = none).
 
-game_over([_, [FirstLine | Board], _, _, _, 2], Result) :- % Checks for a win condition for both players
+game_over([_, [FirstLine | Board],  _, _, _, _, _, 2, _], Result) :- % Checks for a win condition for both players
     process_line([FirstLine | Board], 2, 8, FirstLine, 1, [], Stack1),
     dfs([FirstLine | Board], 2, 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, Success), !,

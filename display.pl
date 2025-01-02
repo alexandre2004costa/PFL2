@@ -370,7 +370,8 @@ display_pieces(Color1, Color2, Color):-
 
 % display_game(+GameState)
 % Displays the game, including the board and other information about the game state.
-display_game([Player, Board, Levels, Color1, Color2, Ratio, MovesLeft]):-
+
+display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, Ratio]):-
     display_board(Board, Levels, Color1, Color2, Ratio), nl,
 
     Size is 73, (Player = 'p1' -> Color = Color1; Player = 'p2' -> Color = Color2),
