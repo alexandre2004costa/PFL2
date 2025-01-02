@@ -7,7 +7,7 @@
 
 
 % Menu ------------------------------------------------------------------------------------------------
-
+ 
 % state(+CurrentState, +Color1, +Color2)
 % Handles the current state of the game and transitions to the next state based on user input or game logic
 
@@ -32,6 +32,13 @@ state(config, Color1, Color2, BoardSize, BoardStyle) :-
     transition(config, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle). 
 
+% Handles the color state, allowing the user to choose custom colors for the game
+state(colors, _, _, _, _):-
+    print_banner_colors(1),
+    print_banner_colors(2), nl,
+    read_input_colors(Color11, Color22),
+    print_banner_display_colors(Color11, Color22), nl,
+    state(initial, Color11, Color22, _, _).
 
 % Handles the board_size state, allowing the user to change the board size
 state(board_size, Color1, Color2, _, BoardStyle):-
@@ -45,14 +52,6 @@ state(board_style, Color1, Color2, BoardSize, _):-
     print_banner_board_style,
     read_option(Option, 3),
     state(initial, Color1, Color2, BoardSize, Option). 
-
-% Handles the color state, allowing the user to choose custom colors for the game
-state(colors, _, _):-
-    print_banner_colors(1),
-    print_banner_colors(2), nl,
-    read_input_colors(Color11, Color22),
-    print_banner_display_colors(Color11, Color22), nl,
-    state(initial, Color11, Color22, BoardSize, BoardStyle).
 
 
 % Handles the state for a player vs computer game mode
@@ -140,7 +139,7 @@ play_game(Mode, Color1, Color2, BoardSize, BoardStyle):-
     play_turn(Mode, GameConfig, 0.5).
 
 play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :- 
-    game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
+    game_over([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Winner),  
     (Winner = 'p1' -> FinalRatio = 1 ; Winner = 'p2' -> FinalRatio = 0 ; FinalRatio = MoveRatio),
     display_game([Player, Board, Levels, Color1, Color2, FinalRatio, MovesLeft]),
     ( Winner = 'T' ->                  
@@ -152,7 +151,7 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, 
         state(winner, Color1, Color2, BoardSize, BoardStyle)
     ;
         % Game continues with the next move.
-        what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2], N, X, Y, NewMoveRatio, Exit),
+        what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize], N, X, Y, NewMoveRatio, Exit),
         (
         Exit = false ->  % Player did not quit, proceed with the move.
             move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], NewState),
@@ -164,78 +163,78 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, 
         )
     ).
 
-what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Exit),
+what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, BoardSize, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
-        check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        check_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
     
 
-what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Exit),
+what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, BoardSize, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
-        check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        check_move(['p1', Board, Levels, OtherPlayer, MovesLeft, BoardSize], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
-what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
+what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft, BoardSize], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Exit),
+what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, BoardSize, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
-        check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        check_move(['p2', Board, Levels, OtherPlayer, MovesLeft, BoardSize], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
-what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
+what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, BoardSize], 1, [N, X, Y], MoveRatio).
 
-what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Exit),
+what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, BoardSize, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
-        check_move(['p1', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        check_move(['p1', Board, Levels, OtherPlayer, MovesLeft, BoardSize], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
-what_move('PlayerVsPc_2', ['p2', Board, Levels, _, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p2', Board, Levels, 'p1', MovesLeft], 2, [N, X, Y], MoveRatio).
+what_move('PlayerVsPc_2', ['p2', Board, Levels, _, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p2', Board, Levels, 'p1', MovesLeft, BoardSize], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, Levels, Exit),
+what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, Exit):-
+    read_input(N,X,Y, BoardSize, Levels, Exit),
     (Exit = true -> MoveRatio = 0
     ;
-        check_move(['p2', Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+        check_move(['p2', Board, Levels, OtherPlayer, MovesLeft, BoardSize], [N, X, Y], NewGameState),
         value(NewGameState, MoveRatio)
     ).
 
 
-what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
+what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, BoardSize], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
+what_move('Pc_1VsPc_1', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
+what_move('Pc_1VsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, BoardSize], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_1VsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
+what_move('Pc_1VsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft, BoardSize], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
+what_move('Pc_2VsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, BoardSize], 2, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft], 1, [N, X, Y], MoveRatio).
+what_move('Pc_2VsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft, BoardSize], 1, [N, X, Y], MoveRatio).
 
-what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _], N, X, Y, MoveRatio, false):-
-    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, [N, X, Y], MoveRatio).
+what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, _, _, BoardSize], N, X, Y, MoveRatio, false):-
+    choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], 2, [N, X, Y], MoveRatio).
 
 
 
@@ -246,10 +245,10 @@ read_option(Option, N) :-
     (integer(Input), Input > 0, Input =< N -> Option is Input, nl; write('Invalid input. '), read_option(Option, N)).
 
 
-read_input(N, X, Y, Levels, Exit) :-
+read_input(N, X, Y, BoardSize, Levels, Exit) :-
     write('Choose the type of block (1-4) or type "exit" to give up: '),
     validate_input_type(N, Exit2), nl, Exit = Exit2,
-    (Exit2 = false -> read_input_coordinates(X, Y, Levels), nl; Exit2 = true -> !).
+    (Exit2 = false -> read_input_coordinates(X, Y, BoardSize, Levels), nl; Exit2 = true -> !).
 
 
 validate_input_type(N, Exit) :-
@@ -264,38 +263,47 @@ validate_input_type(N, Exit) :-
     validate_input_type(N, Exit).
 
 
-read_input_coordinates(X, Y, Levels) :-
-    write('Choose the coordinate X (1-9): '), read(InputX),
-    write('Choose the coordinate Y (1-9): '), read(InputY),
-    validate_input_coordinates(InputX, InputY, X, Y, Levels).
+read_input_coordinates(X, Y, BoardSize, Levels) :-
+    (BoardSize = 1 -> write('Choose the coordinate X (1-9): '); 
+    BoardSize = 2 -> write('Choose the coordinate X (1-7): ')),
+    read(InputX),
+    (BoardSize = 1 -> write('Choose the coordinate Y (1-9): '); 
+    BoardSize = 2 -> write('Choose the coordinate Y (1-7): ')),
+    read(InputY),
+    validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels).
 
-validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
+validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
     (\+ integer(InputX); \+ integer(InputY)),
     write('The coordinates must be numbers'), nl, nl,
-    validate_coordinates(X, Y, Levels). 
+    read_input_coordinates(X, Y, BoardSize, Levels). 
 
-validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
-    (InputX < 1; InputX > 9; InputY < 1; InputY > 9),
-    write('The coordinates must be between 1 and 9.'), nl, nl,
-    read_input_coordinates(X, Y, Levels). 
+validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+    (BoardSize = 1 -> (InputX < 1; InputX > 9; InputY < 1; InputY > 9),
+     write('The coordinates must be between 1 and 9.')
+    ;
+     BoardSize = 1 -> (InputX < 1; InputX > 7; InputY < 1; InputY > 7),
+     write('The coordinates must be between 1 and 7.')
+    ),
+    nl, nl,
+    read_input_coordinates(X, Y, BoardSize, Levels). 
 
-validate_input_coordinates(InputX, InputY, X, Y, Levels) :-
-    validate_coordinates(InputX, InputY, Levels, Valid),
+validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+    validate_coordinates(InputX, InputY, BoardSize, Levels, Valid),
     ( Valid =:= 1 ->
         X = InputX, Y = InputY, !
     ; 
         Valid =:= 0 ->
         write('Invalid coordinates. Try again.'), nl,
-        read_input_coordinates(X, Y, Levels)
+        read_input_coordinates(X, Y, BoardSize, Levels)
     ).
 
 % Game ------------------------------------------------------------------------------------------
-valid_moves(_, Levels, Moves) :-
+valid_moves(_, BoardSize, Levels, Moves) :-
     setof([N, X, Y], (
         generate_coordinates(1, 4, N),
         generate_coordinates(1, 9, X),
         generate_coordinates(1, 9, Y),
-        validate_coordinates(X, Y, Levels, 1)
+        validate_coordinates(X, Y, BoardSize, Levels, 1)
     ), Moves).
 
 generate_coordinates(Low, High, Low) :-
@@ -309,14 +317,14 @@ random_index(Low, High, Index) :-
     random(X),
     Index is Low + floor(X * (High - Low)).
 
-random_move(Board, Levels, N, X, Y):-
-    valid_moves(Board, Levels, Moves),
+random_move(Board, BoardSize, Levels, N, X, Y):-
+    valid_moves(Board, BoardSize, Levels, Moves),
     random_member([N, X, Y], Moves).
 
 
 
-validate_coordinates(X, Y, Levels, Valid) :-
-    BoardX is X-1, BoardY is 10 - Y, 
+validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
+    BoardX is X-1, (BoardSize = 1 -> BoardY is 10 - Y; BoardSize = 2 -> BoardY is 8 - Y),
     BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     1 is X mod 2, 1 is BoardY mod 2, 
@@ -324,11 +332,10 @@ validate_coordinates(X, Y, Levels, Valid) :-
     get_value(Levels, BoardY, BoardX2, Level_LT), Level_LT is 0,
     get_value(Levels, BoardY2, BoardX, Level_RD), Level_RD is 0,
     get_value(Levels, BoardY2, BoardX2, Level_RT), Level_RT is 0,
-    %write('Level 0.'), nl, nl, 
     Valid is 1.
 
-validate_coordinates(X, Y, Levels, Valid) :-
-    BoardX is X-1, BoardY is 10 - Y, 
+validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
+    BoardX is X-1, (BoardSize = 1 -> BoardY is 10 - Y; BoardSize = 2 -> BoardY is 8 - Y),
     BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     get_value(Levels, BoardY, BoardX, L1),
@@ -338,11 +345,9 @@ validate_coordinates(X, Y, Levels, Valid) :-
     L2 is L1, L3 is L1, L4 is L1,
 
     ((0 is L1 mod 2, 1 is X mod 2, 1 is Y mod 2) ; (1 is L1 mod 2, 0 is X mod 2, 0 is Y mod 2)),
-
-    %write('Above levels.'), nl, nl, 
     Valid is 1.
 
-validate_coordinates(_, _, _, Valid) :-
+validate_coordinates(_, _, _, _, Valid) :-
     Valid is 0.
 
 
@@ -381,13 +386,13 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
     transposee(Board, TransposedBoard),
     max_count(TransposedBoard, NumRC, Block, -1, -1, CountCol, NumCol).
 
-value([_, _, _, _, 0], 0.5).
+value([_, _, _, _, 0, _], 0.5).
     
-value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
+value([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], ClampedValue):-
     NumRC is 1,
     (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
-    valid_moves(Board, Levels, Moves),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, _], [BMove, _]),
+    valid_moves(Board, BoardSize, Levels, Moves),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Moves, [WMove, _], [BMove, _]),
     (  WMove \= none, Player = 'p2' ->
         Compensation = 0.15
     ; BMove \= none, Player = 'p1' ->
@@ -413,8 +418,8 @@ value([Player, Board, Levels, OtherPlayer, MovesLeft], ClampedValue):-
     ClampedValue is max(0, min(1, Value)).
 
 
-is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], [WMove, WWin], [BMove, BWin]):-
-    winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner),
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], [Move], [WMove, WWin], [BMove, BWin]):-
+    winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Move, Winner),
     (
         Winner = 'p1' ->
             WMove = Move,
@@ -434,9 +439,9 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], [WM
         BWin = false
     ).
 
-is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
-    winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]),
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
+    winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Move, Winner),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]),
     (
         Winner = 'p1' ->
             WMove = Move,
@@ -454,19 +459,19 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves
         BWin = NextBWin
     ).
 
-winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner):-
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, OtherGameState),
+winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Move, Winner):-
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Move, OtherGameState),
     game_over(OtherGameState, Winner).
 
 
-choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRatio) :-
-    random_move(Board, Levels, N, X, Y),
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], NewGameState),
+choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], 1, [N,X,Y], MoveRatio) :-
+    random_move(Board, BoardSize, Levels, N, X, Y),
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], [N, X, Y], NewGameState),
     value(NewGameState, MoveRatio).
 
-choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio) :-
-    valid_moves(Board, Levels, Moves),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, [WMove, _], [BMove, _]),
+choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], 2, Move, MoveRatio) :-
+    valid_moves(Board, BoardSize, Levels, Moves),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Moves, [WMove, _], [BMove, _]),
     (
         Player = 'p1', WMove \= none ->
         Move = WMove,
@@ -477,19 +482,19 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 2, Move, MoveRatio)
         MoveRatio = 0
 
     ;
-        choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, BestMove, BestMoveRatio),
+        choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Moves, BestMove, BestMoveRatio),
         Move = BestMove,
         MoveRatio = BestMoveRatio
     ).
 
-choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move], Move, MoveRatio):-
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
+choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], [Move], Move, MoveRatio):-
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Move, NewGameState), 
     value(NewGameState, MoveRatio).
 
-choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], BestMove, MoveRatio) :-
-    check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, NewGameState), 
+choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], [Move|Moves], BestMove, MoveRatio) :-
+    check_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Move, NewGameState), 
     value(NewGameState, NewMoveRatio),
-    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], Moves, OtherMove, OtherMoveRatio),
+    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], Moves, OtherMove, OtherMoveRatio),
     (Player = 'p1', NewMoveRatio > OtherMoveRatio -> BestMove = Move, MoveRatio = NewMoveRatio
     ; 
     Player = 'p2', NewMoveRatio < OtherMoveRatio -> BestMove = Move, MoveRatio = NewMoveRatio
@@ -500,7 +505,7 @@ choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves], 
 
 move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, Color1, Color2, BoardSize, BoardStyle]):-
     Moves1 is MovesLeft-1,
-    NewX is X, NewY is 10 - Y,
+    NewX is X, (BoardSize = 1 -> NewY is 10 - Y; BoardSize = 2 -> NewY is 8 - Y),
 
     % Get block
     piece_from_number(N, Piece),
@@ -524,9 +529,9 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, 
     update_piece(Levels3, NewY+1, NewX+1, NewLevel, Levels4).
 
 
-check_move([Player, Board, Levels, OtherPlayer, MovesLeft], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1]):-
+check_move([Player, Board, Levels, OtherPlayer, MovesLeft, BoardSize], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, BoardSize]):-
     Moves1 is MovesLeft-1,
-    NewX is X, NewY is 10 - Y,
+    NewX is X, (BoardSize = 1 -> NewY is 10 - Y; BoardSize = 2 -> NewY is 8 - Y),
 
     % Get block
     piece_from_number(N, Piece),
