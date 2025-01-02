@@ -140,7 +140,7 @@ play_game(Mode, Color1, Color2, BoardSize, BoardStyle):-
     play_turn(Mode, GameConfig, 0.5).
 
 play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :- 
-    game_over([Player, Board, Levels, OtherPlayer, MovesLeft], Winner),  
+    game_over([Player, Board, Levels, OtherPlayer, MovesLeft], BoardSize, Winner),  
     (Winner = 'p1' -> FinalRatio = 1 ; Winner = 'p2' -> FinalRatio = 0 ; FinalRatio = MoveRatio),
     display_game([Player, Board, Levels, Color1, Color2, FinalRatio, MovesLeft]),
     ( Winner = 'T' ->                  
@@ -456,7 +456,7 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], [Move|Moves
 
 winning_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, Winner):-
     check_move([Player, Board, Levels, OtherPlayer, MovesLeft], Move, OtherGameState),
-    game_over(OtherGameState, Winner).
+    game_over(OtherGameState, 1, Winner).
 
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft], 1, [N,X,Y], MoveRatio) :-
