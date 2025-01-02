@@ -7,7 +7,7 @@
 
 
 % Menu ------------------------------------------------------------------------------------------------
-
+ 
 % state(+CurrentState, +Color1, +Color2)
 % Handles the current state of the game and transitions to the next state based on user input or game logic
 
@@ -32,6 +32,13 @@ state(config, Color1, Color2, BoardSize, BoardStyle) :-
     transition(config, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle). 
 
+% Handles the color state, allowing the user to choose custom colors for the game
+state(colors, _, _, _, _):-
+    print_banner_colors(1),
+    print_banner_colors(2), nl,
+    read_input_colors(Color11, Color22),
+    print_banner_display_colors(Color11, Color22), nl,
+    state(initial, Color11, Color22, _, _).
 
 % Handles the board_size state, allowing the user to change the board size
 state(board_size, Color1, Color2, _, BoardStyle):-
@@ -45,14 +52,6 @@ state(board_style, Color1, Color2, BoardSize, _):-
     print_banner_board_style,
     read_option(Option, 3),
     state(initial, Color1, Color2, BoardSize, Option). 
-
-% Handles the color state, allowing the user to choose custom colors for the game
-state(colors, _, _):-
-    print_banner_colors(1),
-    print_banner_colors(2), nl,
-    read_input_colors(Color11, Color22),
-    print_banner_display_colors(Color11, Color22), nl,
-    state(initial, Color11, Color22, BoardSize, BoardStyle).
 
 
 % Handles the state for a player vs computer game mode

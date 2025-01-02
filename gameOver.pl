@@ -9,8 +9,10 @@ is_valid_cell(Board, NBoard, [Col, Row], 'W') :-
     Col2 >= 0,
 
     (   
-        (Row2 = 10, get_value(Board, 9, Col2, 'W')) % This is the bottom row where 'W' wins
+        (NBoard = 1, Row2 = 10, get_value(Board, 9, Col2, 'W')) % This is the bottom row where 'W' wins
     ; 
+        (NBoard = 2, Row2 = 8, get_value(Board, 7, Col2, 'W'))
+    ;
         get_value(Board, Row2, Col2, 'W')
     ).
 
@@ -21,8 +23,10 @@ is_valid_cell(Board, NBoard, [Col, Row], 'B') :-
     (NBoard = 1 -> Row2 =< 10; NBoard = 2 -> Row2 =< 8),
     Col2 >= 0,
     (
-        (Col2 = 10, get_value(Board, Row2, 9, 'B')) % This is the right column where 'B' wins
+        (NBoard = 1, Col2 = 10, get_value(Board, Row2, 9, 'B')) % This is the right column where 'B' wins
     ; 
+        (NBoard = 2, Col2 = 8, get_value(Board, Row2, 7, 'B'))
+    ;
         get_value(Board, Row2, Col2, 'B')
     ).
 
@@ -108,9 +112,9 @@ verify_black_win(NBoard, [[_, _] | Visited], Success) :-
 % Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 
 %'p1' if white wins, 'p2' if black wins or 'none' otherwise
 
-game_over([_, [_ | _], _, _, 0], _, 'T') :- !. % No left moves, tie.
+game_over([_, [_ | _], _, _, 0, _], 'T') :- !. % No left moves, tie.
 
-game_over([_, [_ | _], _, _, MovesPlayed], NBoard, none) :- 
+game_over([_, [_ | _], _, _, MovesPlayed, _], none) :- 
     (NBoard = 1 -> MovesPlayed > 49;    % Need at least 5 moves to win
      NBoard = 2 -> MovesPlayed > 26)     % Need at least 4 moves to win
     , !.
