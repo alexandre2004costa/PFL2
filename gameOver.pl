@@ -103,7 +103,7 @@ verify_black_win(NBoard, [[_, _] | Visited], Success) :-
     verify_black_win(NBoard, Visited, Success).
 
 
-% game_over(+GameState, +BoardSize, -Result)
+% game_over(+GameState, -Result)
 % Determines the result of the game based on the game state and the board size
 % Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 
 %'p1' if white wins, 'p2' if black wins or 'none' otherwise
@@ -115,7 +115,7 @@ game_over([_, [_ | _], _, _, MovesPlayed], NBoard, none) :-
      NBoard = 2 -> MovesPlayed > 26)     % Need at least 4 moves to win
     , !.
 
-game_over([_, [FirstLine | Board], _, _, _], NBoard, Result) :- % Checks for a win condition for both players
+game_over([_, [FirstLine | Board], _, _, _, NBoard], Result) :- % Checks for a win condition for both players
     process_line([FirstLine | Board], NBoard, 10, FirstLine, 1, [], Stack1),
     dfs([FirstLine | Board], 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, Success), !,
