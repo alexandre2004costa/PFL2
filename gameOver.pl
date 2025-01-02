@@ -119,14 +119,30 @@ game_over([_, [_ | _], _, _, MovesPlayed, _], none) :-
      NBoard = 2 -> MovesPlayed > 26)     % Need at least 4 moves to win
     , !.
 
-game_over([_, [FirstLine | Board], _, _, _, NBoard], Result) :- % Checks for a win condition for both players
-    process_line([FirstLine | Board], NBoard, 10, FirstLine, 1, [], Stack1),
-    dfs([FirstLine | Board], NBoard, 'W', Stack1, [], Visited), !,
+
+
+game_over([_, [FirstLine | Board], _, _, _, 1], Result) :- % Checks for a win condition for both players
+    process_line([FirstLine | Board], 1, 10, FirstLine, 1, [], Stack1),
+    dfs([FirstLine | Board], 1, 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, Success), !,
 
-    process_column([FirstLine | Board], NBoard, 1, [FirstLine | Board], 1, [], Stack2),
-    dfs([FirstLine | Board], NBoard, 'B', Stack2, [], Visited2), !,
-    verify_black_win(NBoard, Visited2, Success2), !,
+    process_column([FirstLine | Board], 1, 1, [FirstLine | Board], 1, [], Stack2),
+    dfs([FirstLine | Board], 1, 'B', Stack2, [], Visited2), !, 
+    verify_black_win(1, Visited2, Success2), !,
+
+    (Success, Success2 -> Result = 'T';
+     Success -> Result = 'p1';
+     Success2 -> Result = 'p2';
+     Result = none).
+
+game_over([_, [FirstLine | Board], _, _, _, 2], Result) :- % Checks for a win condition for both players
+    process_line([FirstLine | Board], 2, 8, FirstLine, 1, [], Stack1),
+    dfs([FirstLine | Board], 2, 'W', Stack1, [], Visited), !,
+    verify_white_win(Visited, Success), !,
+
+    process_column([FirstLine | Board], 2, 1, [FirstLine | Board], 1, [], Stack2),
+    dfs([FirstLine | Board], 2, 'B', Stack2, [], Visited2), !, 
+    verify_black_win(2, Visited2, Success2), !,
 
     (Success, Success2 -> Result = 'T';
      Success -> Result = 'p1';
