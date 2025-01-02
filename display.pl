@@ -117,6 +117,21 @@ print_banner(pcVspc):-
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
+
+print_banner(config):-
+    Size is 60, Symbol = 0x2551, 
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('What do you want to change?', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1 -> Colors', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('2 -> Board size', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('3 -> Board style', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
 print_banner(colors, N):-
     Size is 60, Symbol = 0x2551,
     (N = 1 -> Title = 'Colors for Player 1', Letter = 'W'; N = 2 -> Title = 'Colors for Player 2', Letter = 'B'),
@@ -134,6 +149,32 @@ print_banner(colors, N):-
         write_color('7 -> ',white ), display_code(Letter, white), print_n(2, ' '),
         reset_color, print_n(1, ' '), put_code_color(0x2551, white), nl,
     write(' '), line(1, Symbol, Size),
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
+print_banner(board_size):-
+    Size is 60, Symbol = 0x2551, 
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('What board size do you want?', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1 -> 5 x 5', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('2 -> 4 x 4', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
+print_banner(board_style):-
+    Size is 60, Symbol = 0x2551, 
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('What board style do you want?', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('1 -> Tradicional', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('2 -> Full level 1', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
+    write(' '), word('3 -> Recent option', Symbol, Size),
+    write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 print_banner(display_colors, Color1, Color2):-
