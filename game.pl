@@ -162,10 +162,10 @@ final_ratio(_, MoveRatio, MoveRatio).
 % handle_game(+Mode, +Winner, +GameState, +NewMoveRatio)
 % Handles the current game state. 
 % If there is a tie or a winner, the game ends. If not, it handles the next move.
-handle_game(_, 'T', _, _) :- 
+handle_game(_, 'T', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], _) :- 
     write('Game tied!'), nl,
     state(initial, Color1, Color2, BoardSize, BoardStyle).
-handle_game(_, Winner, _, _) :-
+handle_game(_, Winner, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], _) :-
     Winner \= none,
     print_banner_final(Winner, Color1, Color2),
     state(winner, Color1, Color2, BoardSize, BoardStyle).
@@ -186,7 +186,7 @@ handle_move(_, [_, _, _, OtherPlayer, _, Color1, Color2, BoardSize, BoardStyle],
 
 % what_move(+Mode, +GameState, -N, -X, -Y, -MoveRatio, -Exit)
 % Gets the moves for different game modes
-what_move('PlayerVsPlayer',[Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
+what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
     read_input(BoardSize, Levels, N, X, Y, Exit),
     player_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
@@ -545,13 +545,14 @@ check_winner_2(_, _, NextBMove, NextBWin, BMove, BWin):-
     BMove = NextBMove, BWin = NextBWin.
 
 
-
-
+% random_move(+GameState, -N, -X, -Y)
+% Selects a random valid move (N, X, Y) for the given game state.
 random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y):-
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     random_member([N, X, Y], Moves).
 
-
+% choose_move(+GameState, +Strategy, -Move, -MoveRatio)
+% Gives a move chosen by the computer player, based on their strategy (1 for random valid move, 2 for best play).
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N,X,Y], MoveRatio) :-
     random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y),
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], NewGameState),
@@ -559,19 +560,22 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boar
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, Move, MoveRatio) :-
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),
-    choose_move_ratio([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, WMove, BMove, Move, MoveRatio).
+    get_move_ratio([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, WMove, BMove, Move, MoveRatio).
 
-
-choose_move_ratio([Player, _, _, _, _, _, _, _, _], _, WMove, _, Move, MoveRatio):-
+% get_move_ratio(+GameState, +Moves, +WMove, +BMove, -Move, -MoveRatio)
+% Get the move and ratio based on the game state and moves.
+get_move_ratio([Player, _, _, _, _, _, _, _, _], _, WMove, _, Move, MoveRatio):-
     Player = 'p1', WMove \= none,
     Move = WMove, MoveRatio = 1.
-choose_move_ratio([Player, _, _, _, _, _, _, _, _], _, _, BMove, Move, MoveRatio):-
+get_move_ratio([Player, _, _, _, _, _, _, _, _], _, _, BMove, Move, MoveRatio):-
     Player = 'p2', BMove \= none,
     Move = BMove, MoveRatio = 0.
-choose_move_ratio([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, _, _, Move, MoveRatio):-
+get_move_ratio([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, _, _, Move, MoveRatio):-
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, BestMove, BestMoveRatio),
     Move = BestMove, MoveRatio = BestMoveRatio.
 
+% choose_best_move(+GameState, +Moves, -BestMove, -MoveRatio)
+% Finds the best move from a list of valid moves and calculates its ratio.
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move], Move, MoveRatio):-
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, NewGameState), 
     value(NewGameState, MoveRatio).
@@ -581,7 +585,8 @@ choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2,
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, OtherMove, OtherMoveRatio),
     choose_best_move_ratio(Player, Move, OtherMove, NewMoveRatio, OtherMoveRatio, BestMove, MoveRatio).
 
-% choose_best_move_ratio(Player, Move, OtherMove, NewMoveRatio, OtherMoveRatio, -BestMove, -MoveRatio)
+% choose_best_move_ratio(+Player, +Move, +OtherMove, +NewMoveRatio, +OtherMoveRatio, -BestMove, -MoveRatio)
+% Compares two moves ratios and determines the best move for the current player.
 choose_best_move_ratio(Player, Move, _, NewMoveRatio, OtherMoveRatio, BestMove, MoveRatio):-
     Player = 'p1', NewMoveRatio > OtherMoveRatio, 
     BestMove = Move, MoveRatio = NewMoveRatio.
