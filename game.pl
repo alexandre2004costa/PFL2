@@ -138,8 +138,7 @@ play_game(Mode, Color1, Color2, BoardSize, BoardStyle):-
     initial_state(['p1', 'p2', Color1, Color2, BoardSize, BoardStyle], GameState),
     play_turn(Mode, GameState, 0.5).
 
-play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :- 
-    write(Mode),
+play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :-
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),  
     (Winner = 'p1' -> FinalRatio = 1 ; Winner = 'p2' -> FinalRatio = 0 ; FinalRatio = MoveRatio),
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, FinalRatio]),
@@ -387,7 +386,7 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
     transposee(Board, TransposedBoard),
     max_count(TransposedBoard, NumRC, Block, -1, -1, CountCol, NumCol).
 
-value([_, _, _, _, 0, _], 0.5).
+value([_, _, _, _, 0, _, _, _, _], 0.5).
     
 value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ClampedValue):-
     NumRC is 1,
