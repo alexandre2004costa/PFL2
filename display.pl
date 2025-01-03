@@ -52,10 +52,10 @@ level_color(Size, Ratio, Row, 2) :-
 
 % get_color_rows(+Size, +Ratio, +Row, +Color1, +Color2, -RowColor, -ColorCode)
 % Assigns the color of the row and his code, taking into consideration the player obtained from level_color
-get_color_rows(Size, Ratio, Row, Color1, Color2, Color1, 0x2593):-
+get_color_rows(Size, Ratio, Row, Color1, _, Color1, 0x2593):-
     level_color(Size, Ratio, Row, 1).
 
-get_color_rows(Size, Ratio, Row, Color1, Color2, Color2, 0x2592):-
+get_color_rows(Size, Ratio, Row, _, Color2, Color2, 0x2592):-
     level_color(Size, Ratio, Row, 2).
 
 % Banners -------------------------------------------------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ print_banner_config:-
 % Displays a banner to show the possible colors to choose for player 1 or 2
 print_banner_colors(N):-
     Size is 60, Symbol = 0x2551,
-    banner_colors_helper(N, Title, Leter),
+    banner_colors_helper(N, Title, Letter),
     write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
     write(' '), line(1, Symbol, Size), 
     write(' '), word(Title, Symbol, Size),
@@ -255,8 +255,8 @@ print_banner_final(Winner, Color1, Color2):-
 
 % banner_final_helper(+Winner, +Color1, +Color2, -Text, -NewColor)
 % Given a winner and both game colors, gives a full text of the player and his own color.
-banner_final_helper('p1', Color1, Color2, 'Player 1', Color1).
-banner_final_helper('p2', Color1, Color2, 'Player 2', Color2).
+banner_final_helper('p1', Color1, _, 'Player 1', Color1).
+banner_final_helper('p2', _, Color2, 'Player 2', Color2).
 
 
 % Board and Game ------------------------------------------------------------------------------------------------------------------
@@ -430,10 +430,9 @@ display_turn(Player, MovesLeft, Color1, Color2, none):-
     write(' '), put_code_color(0x255A, Color), print_n_code(Size, 0x2550, Color), put_code_color(0x255D, Color), nl, nl.
 
 % displays nothing in case of a winner
-display_turn(Player, MovesLeft, Color1, Color2, Winner).
-
+display_turn(_, _, _, _, _).
 
 % helper_player_color(+Player, -Color)
 % Maps Player to his Color
-helper_player_color('p1', Color1, Color2, Color1).
-helper_player_color('p2', Color1, Color2, Color2).
+helper_player_color('p1', Color1, _, Color1).
+helper_player_color('p2', _, Color2, Color2).
