@@ -139,10 +139,9 @@ play_game(Mode, Color1, Color2, BoardSize, BoardStyle):-
     play_turn(Mode, GameState, 0.5).
 
 play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :-
-    write(MovesLeft), 
+    write('Final eval'), nl,
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),  
     (Winner = 'p1' -> FinalRatio = 1 ; Winner = 'p2' -> FinalRatio = 0 ; FinalRatio = MoveRatio),
-    write('Display'),
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, FinalRatio]),
     ( Winner = 'T' ->                  
         write('Game tied!'), nl,
@@ -153,13 +152,10 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, 
         state(winner, Color1, Color2, BoardSize, BoardStyle)
     ;
         % Game continues with the next move.
-        write('Be wm'),
         what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, NewMoveRatio, Exit),
-        write([N, X, Y]), nl,
         (
         Exit = false ->  % Player did not quit, proceed with the move.
             move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], NewState),
-            write(NewState),nl,
             play_turn(Mode, NewState, NewMoveRatio)
         ;
             % Player quit, other player wins. 

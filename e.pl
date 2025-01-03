@@ -97,7 +97,6 @@ verify_white_win([[_, 0] | _], true).
 verify_white_win([[_, _] | Visited], Success) :-
     verify_white_win(Visited, Success).
 
-
 % verify_black_win(+Size, +Visited, -Success)
 % Checks if any cell in the visited list belongs to the rightmost column (indicating a black win)
 verify_black_win(_, [], false).
@@ -107,7 +106,7 @@ verify_black_win(Size, [[_, _] | Visited], Success) :-
 
 
 % game_over(+GameState, -Winner)
-% Determines the winner of the game based on the game state and the board size
+% Determines the winner of the game based on the game state
 % Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 
 %'p1' if white wins, 'p2' if black wins or 'none' otherwise
 game_over([_, [_ | _], _, _, 0, _, _, _, _], 'T') :- !. % No left moves, tie.
@@ -119,7 +118,7 @@ game_over([_, [_ | _], _, _, MovesPlayed, _, _, 2, _], none) :-
     MovesPlayed > 26, !.    % Need at least 4 moves to win
 
 game_over([_, [FirstLine | Board],  _, _, _, _, _, BoardSize, _], Winner) :- % Checks for a win condition for both players, Board 4x4
-    length([FirstLine | Board], Size),
+    length(Board, Size),
     process_line([FirstLine | Board], BoardSize, Size, FirstLine, 1, [], Stack1),
     dfs([FirstLine | Board], 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, WhiteWin), !,
@@ -127,7 +126,7 @@ game_over([_, [FirstLine | Board],  _, _, _, _, _, BoardSize, _], Winner) :- % C
     process_column([FirstLine | Board], BoardSize, 1, [FirstLine | Board], 1, [], Stack2),
     dfs([FirstLine | Board], 'B', Stack2, [], Visited2), !, 
     verify_black_win(Size, Visited2, BlackWin), !,
-    write([Visited]), nl, write(Visited2),
+    write([Visited, Visited2]),
     decide_winner(WhiteWin, BlackWin, Winner).
 
 decide_winner(true, true, 'T').
