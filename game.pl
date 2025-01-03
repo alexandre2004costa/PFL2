@@ -153,6 +153,13 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, 
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, FinalRatio]),
     handle_game(Mode, Winner, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]).
 
+play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :- 
+    %game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),  
+    display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, MoveRatio]),
+    what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, NewMoveRatio, Exit),
+    handle_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, NewMoveRatio).
+
+
 % final_ratio(+Winner, +MoveRatio, -NewMoveRatio)
 % Determines a new ratio if there is a winner. 
 final_ratio('p1', _, 1).
@@ -163,15 +170,12 @@ final_ratio(_, MoveRatio, MoveRatio).
 % Handles the current game state. 
 % If there is a tie or a winner, the game ends. If not, it handles the next move.
 handle_game(_, 'T', [_, _, _, _, _, Color1, Color2, BoardSize, BoardStyle]) :- 
-    write('Game tied!'), nl,
-    state(initial, Color1, Color2, BoardSize, BoardStyle).
+    print_banner_tie,
+    state(winner, Color1, Color2, BoardSize, BoardStyle).
 handle_game(_, Winner, [_, _, _, _, _, Color1, Color2, BoardSize, BoardStyle]) :-
-    Winner \= none,
     print_banner_final(Winner, Color1, Color2),
     state(winner, Color1, Color2, BoardSize, BoardStyle).
-handle_game(Mode, _, State) :-
-    what_move(Mode, State, N, X, Y, NewMoveRatio, Exit),
-    handle_move(Mode, State, [N, X, Y], Exit, NewMoveRatio).
+
 
 % handle_move(+Mode, +GameState, +Move, +Exit, +NewMoveRatio)
 % Processes a player move. 
@@ -431,8 +435,9 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 value([_, _, _, _, 0, _, _, _, _], 0.5).
 value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ClampedValue):-
+    write('In value'),
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
-    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),!,
     get_compension(WMove, BMove, Player, Compensation),
     get_value(WMove, BMove, Player, Board, Compensation, Value),
     ClampedValue is max(0, min(1, Value)).
@@ -507,11 +512,17 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move], [WMove, WWin], [BMove, BWin]):-
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, Winner),
     update_winning_move(Winner, Move, WMove, WWin, BMove, BWin).
+   
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move], [none, false], [none, false]).
+   
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, Winner),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]),
     check_winner_1(Winner, Move, NextWMove, NextWWin, WMove, WWin),
     check_winner_2(Winner, Move, NextBMove, NextBWin, BMove, BWin).
+
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move|Moves], [NextWMove, NextWWin], [NextBMove, NextBWin]):-
+    is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]).
 
 % winning_move(+GameState, +Move, -Winner)
 % Checks if the move on the game state results in a win for any player.
