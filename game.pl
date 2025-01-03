@@ -163,8 +163,8 @@ final_ratio(_, MoveRatio, MoveRatio).
 % Handles the current game state. 
 % If there is a tie or a winner, the game ends. If not, it handles the next move.
 handle_game(_, 'T', [_, _, _, _, _, Color1, Color2, BoardSize, BoardStyle]) :- 
-    write('Game tied!'), nl,
-    state(initial, Color1, Color2, BoardSize, BoardStyle).
+    print_banner_tie,
+    state(winner, Color1, Color2, BoardSize, BoardStyle).
 handle_game(_, Winner, [_, _, _, _, _, Color1, Color2, BoardSize, BoardStyle]) :-
     Winner \= none,
     print_banner_final(Winner, Color1, Color2),
