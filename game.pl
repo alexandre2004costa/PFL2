@@ -331,9 +331,12 @@ random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boar
     random_member([N, X, Y], Moves).
 
 
+%get_board_y(BoardSize, Y, BoardY)
+get_board_y(1, Y, BoardY):- BoardY is 10 - Y.
+get_board_y(2, Y, BoardY):- BoardY is 8 - Y.
 
 validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
-    BoardX is X-1, (BoardSize = 1 -> BoardY is 10 - Y; BoardSize = 2 -> BoardY is 8 - Y),
+    BoardX is X-1, get_board_y(BoardSize, Y, BoardY),
     BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     1 is X mod 2, 1 is BoardY mod 2, 
@@ -344,7 +347,7 @@ validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
     Valid is 1.
 
 validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
-    BoardX is X-1, (BoardSize = 1 -> BoardY is 10 - Y; BoardSize = 2 -> BoardY is 8 - Y),
+    BoardX is X-1, get_board_y(BoardSize, Y, BoardY),
     BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     get_value(Levels, BoardY, BoardX, L1),
@@ -377,16 +380,24 @@ transposee(Board, [Row | Transposed]):-
 count_block([], _, 0).
 count_block([Elem | Rest], Block, Count):-
     count_block(Rest, Block, RestCount),
-    (Elem = Block -> Count is RestCount + 1 ; Count is RestCount).
+    Elem = Block, Count is RestCount + 1.
+count_block([Elem | Rest], Block, Count):-
+    count_block(Rest, Block, RestCount),
+    Count is RestCount.
 
 max_count([], _, _, CurrentMax, CurrentRow, CurrentMax, CurrentRow).
 max_count([Row | Rest], NumRow, Block, CurrentMax, CurrentRow, Max, MaxRow):-
     count_block(Row, Block, CountRow),
-    (CountRow > CurrentMax -> NewMax = CountRow, NewMaxRow = NumRow;
-                              NewMax = CurrentMax, NewMaxRow = CurrentRow),
+    update_max(CountRow, CurrentMax, NumRow, CurrentRow, NewMax, NewMaxRow),
     NextRow is NumRow + 1,
     max_count(Rest, NextRow, Block, NewMax, NewMaxRow, Max, MaxRow).
 
+update_max(CountRow, CurrentMax, NumRow, _, NewMax, NewMaxRow) :-
+    CountRow > CurrentMax,
+    NewMax = CountRow, NewMaxRow = NumRow.
+update_max(CountRow, CurrentMax, _, CurrentRow, NewMax, NewMaxRow) :-
+    CountRow =< CurrentMax,
+    NewMax = CurrentMax, NewMaxRow = CurrentRow.
 
 max_count_row(Board, NumRC, Block, CountRow, NumRow):-
     max_count(Board, NumRC, Block, -1, -1, CountRow, NumRow).
@@ -395,83 +406,94 @@ max_count_col(Board, NumRC, Block, CountCol, NumCol):-
     transposee(Board, TransposedBoard),
     max_count(TransposedBoard, NumRC, Block, -1, -1, CountCol, NumCol).
 
+%get_block(Player, Block, OtherBlock)
+get_block('p1', 'W', 'B').
+get_block('p2', 'B', 'W').
+
+%get_compension(WMove, BMove, Player, Compensation)
+get_compension(WMove, _, Player, Compensation):-
+    WMove \= none, Player = 'p2',
+    Compensation = 0.15.
+get_compension(_, BMove, Player, Compensation):-
+    BMove \= none, Player = 'p1',
+    Compensation = -0.15.
+get_compension(_, _, _ ,Compensation):-
+    Compensation = 0.
+
+% get_value(WMove, BMove, Player, Value)
+get_value(WMove, _, Player, _, _, Value):-
+    WMove \= none, Player = 'p1',
+    Value = 1.
+get_value(_, BMove, Player, _, _, Value):-
+    BMove \= none, Player = 'p2',
+    Value = 0.
+get_value(_, _, Player, Board, Compensation, Value):-
+    NumRC is 1, get_block(Player, Block, OtherBlock),
+    max_count_col(Board, NumRC, Block, CountColGood, _),
+    max_count_row(Board, NumRC, OtherBlock, CountRowBad, _),
+
+    TotalCount is CountColGood + CountRowBad,
+    BaseValue is CountColGood / TotalCount,
+
+    Value is BaseValue + Compensation.
+
+
 value([_, _, _, _, 0, _], 0.5).
-    
 value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ClampedValue):-
-    NumRC is 1,
-    (Player = 'p1' -> Block = 'W', OtherBlock = 'B'; Block = 'B', OtherBlock = 'W'),
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),
-    (  WMove \= none, Player = 'p2' ->
-        Compensation = 0.15
-    ; BMove \= none, Player = 'p1' ->
-        Compensation = -0.15
-    ; 
-        Compensation = 0
-    ),
-
-    ( WMove \= none, Player = 'p1' ->                  
-        Value = 1 
-    ;   
-        BMove \= none, Player = 'p2' ->                  
-        Value = 0 
-    ; 
-        max_count_col(Board, NumRC, Block, CountColGood, _),
-        max_count_row(Board, NumRC, OtherBlock, CountRowBad, _),
-
-        TotalCount is CountColGood + CountRowBad,
-        BaseValue is CountColGood / TotalCount,
-    
-        Value is BaseValue + Compensation
-    ),
+    get_compension(WMove, BMove, Player, Compensation),
+    get_value(WMove, BMove, Player, Board, Compensation, Value),
     ClampedValue is max(0, min(1, Value)).
 
 
+%update_winning_move(Winner, Move, WMove, WWin, BMove, BWin)
+update_winning_move(Winner, Move, WMove, WWin, BMove, BWin):-
+    Winner = 'p1', 
+    WMove = Move, WWin = true, BMove = none, BWin = false.
+update_winning_move(Winner, Move, WMove, WWin, BMove, BWin):-
+    Winner = 'p2', 
+    WMove = none, WWin = false, BMove = Move, BWin = true.
+update_winning_move(Winner, Move, WMove, WWin, BMove, BWin):-
+    WMove = none, WWin = false, BMove = none, BWin = false.
+
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move], [WMove, WWin], [BMove, BWin]):-
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, Winner),
-    (
-        Winner = 'p1' ->
-            WMove = Move,
-            WWin = true,
-            BMove = none,
-            BWin = false
-    ;
-        Winner = 'p2' ->
-            WMove = none,
-            WWin = false,
-            BMove = Move,
-            BWin = true
-    ;
-        WMove = none,
-        WWin = false,
-        BMove = none,
-        BWin = false
-    ).
+    update_winning_move(Winner, Move, WMove, WWin, BMove, BWin).
 
 is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, Winner),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]),
-    (
-        Winner = 'p1' ->
-            WMove = Move,
-            WWin = true
-    ;
-        WMove = NextWMove,
-        WWin = NextWWin
-    ),
-    (
-        Winner = 'p2' ->
-            BMove = Move,
-            BWin = true
-    ;
-        BMove = NextBMove,
-        BWin = NextBWin
-    ).
+    check_winner_1(Winner, Move, WMove, WWin, NextWMove, NextWWin),
+    check_winner_2(Winner, Move, BMove, BWin, NextBMove, NextBWin).
+
+% check_winner_1(Winner, Move, WMove, WWin, NextWMove, NextWWin)
+check_winner_1(Winner, Move, WMove, WWin, _, _):-
+    Winner = 'p1',  WMove = Move, WWin = true.
+check_winner_1(_, _, WMove, WWin, NextWMove, NextWWin):-
+    WMove = NextWMove, WWin = NextWWin.
+
+% check_winner_2(Winner, Move, BMove, BWin, NextBMove, NextBWin)
+check_winner_2(Winner, Move, BMove, BWin, _, _):-
+    Winner = 'p2',  BMove = Move, BWin = true.
+check_winner_2(_, _, BMove, BWin, NextBMove, NextBWin):-
+    BMove = NextBMove, BWin = NextBWin.
+
 
 winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, Winner):-
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, OtherGameState),
     game_over(OtherGameState, Winner).
 
+
+choose_move_ratio([Player, _, _, _, _, _, _, _, _], _, WMove, _, Move, MoveRatio):-
+    Player = 'p1', WMove \= none,
+    Move = WMove, MoveRatio = 1.
+choose_move_ratio([Player, _, _, _, _, _, _, _, _], _, _, BMove, Move, MoveRatio):-
+    Player = 'p2', BMove \= none,
+    Move = BMove, MoveRatio = 0.
+choose_move_ratio([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, _, _, Move, MoveRatio):-
+    choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, BestMove, BestMoveRatio),
+    Move = BestMove, MoveRatio = BestMoveRatio.
 
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N,X,Y], MoveRatio) :-
     random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y),
@@ -481,20 +503,19 @@ choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boar
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, Move, MoveRatio) :-
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),
-    (
-        Player = 'p1', WMove \= none ->
-        Move = WMove,
-        MoveRatio = 1
-    ;
-        Player = 'p2', BMove \= none ->
-        Move = BMove,
-        MoveRatio = 0
+    choose_move_ratio([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, WMove, BMove, Move, MoveRatio).
 
-    ;
-        choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, BestMove, BestMoveRatio),
-        Move = BestMove,
-        MoveRatio = BestMoveRatio
-    ).
+
+% choose_best_move_ratio(Player, Move, OtherMove, NewMoveRatio, OtherMoveRatio, -BestMove, -MoveRatio)
+choose_best_move_ratio(Player, Move, _, NewMoveRatio, OtherMoveRatio, BestMove, MoveRatio):-
+    Player = 'p1', NewMoveRatio > OtherMoveRatio, 
+    BestMove = Move, MoveRatio = NewMoveRatio.
+choose_best_move_ratio(Player, Move, _, NewMoveRatio, OtherMoveRatio, BestMove, MoveRatio):-
+    Player = 'p2', NewMoveRatio < OtherMoveRatio,
+    BestMove = Move, MoveRatio = NewMoveRatio.
+choose_best_move_ratio(_, _, OtherMove,  _, OtherMoveRatio, BestMove, MoveRatio):-
+    BestMove = OtherMove, MoveRatio = OtherMoveRatio.
+
 
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move], Move, MoveRatio):-
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, NewGameState), 
@@ -504,17 +525,15 @@ choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2,
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, NewGameState), 
     value(NewGameState, NewMoveRatio),
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, OtherMove, OtherMoveRatio),
-    (Player = 'p1', NewMoveRatio > OtherMoveRatio -> BestMove = Move, MoveRatio = NewMoveRatio
-    ; 
-    Player = 'p2', NewMoveRatio < OtherMoveRatio -> BestMove = Move, MoveRatio = NewMoveRatio
-    ; 
-        BestMove = OtherMove, MoveRatio = OtherMoveRatio
-    ).
-    
+    choose_best_move_ratio(Player, Move, OtherMove, NewMoveRatio, OtherMoveRatio, BestMove, MoveRatio).
+  
+
+get_new_y(1, NewY, Y):- NewY is 10 - Y.
+get_new_y(2, NewY, Y):- NewY is 8 - Y.
 
 move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, Color1, Color2, BoardSize, BoardStyle]):-
     Moves1 is MovesLeft-1,
-    NewX is X, (BoardSize = 1 -> NewY is 10 - Y; BoardSize = 2 -> NewY is 8 - Y),
+    NewX is X, get_new_y(BoardSize, NewY, Y),
 
     validate_coordinates(X, Y, BoardSize, Levels, 1),  % Check if its valid
 
