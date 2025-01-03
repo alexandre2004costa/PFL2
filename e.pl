@@ -8,12 +8,14 @@ is_valid_cell(Board, [Col, Row], 'W') :-
     Row2 >= 0,
     Col2 =< Size,
     Col2 >= 0,
-    Size1 is Size - 1,
-    (   
-        (Row2 = Size, get_value(Board, Size1, Col2, 'W')) % This is the bottom row where 'W' wins
-    ;
-        get_value(Board, Row2, Col2, 'W')
-    ).
+    valid_white_cell(Board, Row2, Col2, Size).
+
+valid_white_cell(Board, Row2, Col2, Row2):-
+    Size1 is Row2 - 1,
+    get_value(Board, Size1, Col2, 'W').
+
+valid_white_cell(Board, Row2, Col2, Size):-
+    get_value(Board, Row2, Col2, 'W').
 
 is_valid_cell(Board, [Col, Row], 'B') :-
     length(Board, Size),
@@ -22,47 +24,48 @@ is_valid_cell(Board, [Col, Row], 'B') :-
     Row2 >= 0,
     Row2 =< Size,
     Col2 >= 0,
-    Size1 is Size - 1,
-    (
-        (Col2 = Size, get_value(Board, Row2, Size1, 'B')) % This is the right column where 'B' wins
-    ; 
-        get_value(Board, Row2, Col2, 'B')
-    ).
+    valid_black_cell(Board, Row2, Col2, Size).
 
+valid_black_cell(Board, Row2, Col2, Col2):-
+    Size1 is Col2 - 1,
+    get_value(Board, Row2, Size1, 'B').
 
-% process_line(+Board, +BoardSize, +Y, +Line, +X, +Stack, -FinalStack)
+valid_black_cell(Board, Row2, Col2, Size):-
+     get_value(Board, Row2, Col2, 'B').
+
+% process_line(+Board, +Size, +Y, +Line, +X, +Stack, -FinalStack)
 % Used to find 'W' cells in the first row of the board
 
-process_line(_, 1, _, _, 11, Stack, Stack) :- !. % Stops when X = 11, out of board
-process_line(_, 2, _, _, 9, Stack, Stack) :- !. % Stops when X = 9, out of board
+process_line(_, Size, _, _, Size1, Stack, Stack) :- Size1 is Size + 1, !. % Stops when X = 11, out of board
+process_line(_, Size, _, _, Size1, Stack, Stack) :- Size1 is Size + 1, !. % Stops when X = 9, out of board
 
 % Adds a 'W' piece found in the row to the stack and continues processing
-process_line(Board, NBoard, Y, ['W' | Line], X, Stack, FinalStack) :-
+process_line(Board, Size, Y, ['W' | Line], X, Stack, FinalStack) :-
     TempStack = [[X, Y] | Stack],
     X1 is X + 1,
-    process_line(Board, NBoard, Y, Line, X1, TempStack, FinalStack), !.
+    process_line(Board, Size, Y, Line, X1, TempStack, FinalStack), !.
 
 % Skips cells that are not 'W' and continues processing the row.
-process_line(Board, NBoard, Y, [_ | Line], X, Stack, FinalStack) :-
+process_line(Board, Size, Y, [_ | Line], X, Stack, FinalStack) :-
     X1 is X + 1,
-    process_line(Board, NBoard, Y, Line, X1, Stack, FinalStack), !.
+    process_line(Board, Size, Y, Line, X1, Stack, FinalStack), !.
 
 
 % process_column(+Board, +BoardSize, +Y, +Lines, +X, +Stack, -FinalStack)
 % Used to find 'B' cells in the first column of the board
-process_column(_, 1, 11, _, _, Stack, Stack) :- !.
-process_column(_, 2, 9, _, _, Stack, Stack) :- !.
+process_column(_, Size, Size1, _, _, Stack, Stack) :- Size1 is Size + 1, !.
+process_column(_, Size, Size1, _, _, Stack, Stack) :- Size1 is Size + 1, !.
 
 % Adds a 'B' piece found in the column to the stack and continues processing
-process_column(Board, NBoard, Y, [['B' | _] | Lines], X, Stack, FinalStack) :-
+process_column(Board, Size, Y, [['B' | _] | Lines], X, Stack, FinalStack) :-
     TempStack = [[X, Y] | Stack],
     Y1 is Y + 1,
-    process_column(Board, NBoard, Y1, Lines, X, TempStack, FinalStack), !.
+    process_column(Board, Size, Y1, Lines, X, TempStack, FinalStack), !.
 
 % Skips cells that are not 'B' and continues processing the column.
-process_column(Board, NBoard, Y, [[_ | _] | Lines], X, Stack, FinalStack) :-
+process_column(Board, Size, Y, [[_ | _] | Lines], X, Stack, FinalStack) :-
     Y1 is Y + 1,
-    process_column(Board, NBoard, Y1, Lines, X, Stack, FinalStack), !.
+    process_column(Board, Size, Y1, Lines, X, Stack, FinalStack), !.
 
 
 % dfs(+Board, +BoardSize, +Color, +Stack, +Visited, -LastVisited)
@@ -97,6 +100,7 @@ verify_white_win([[_, 0] | _], true).
 verify_white_win([[_, _] | Visited], Success) :-
     verify_white_win(Visited, Success).
 
+
 % verify_black_win(+Size, +Visited, -Success)
 % Checks if any cell in the visited list belongs to the rightmost column (indicating a black win)
 verify_black_win(_, [], false).
@@ -106,7 +110,7 @@ verify_black_win(Size, [[_, _] | Visited], Success) :-
 
 
 % game_over(+GameState, -Winner)
-% Determines the winner of the game based on the game state
+% Determines the winner of the game based on the game state and the board size
 % Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 
 %'p1' if white wins, 'p2' if black wins or 'none' otherwise
 game_over([_, [_ | _], _, _, 0, _, _, _, _], 'T') :- !. % No left moves, tie.
@@ -117,16 +121,16 @@ game_over([_, [_ | _], _, _, MovesPlayed, _, _, 1, _], none) :-
 game_over([_, [_ | _], _, _, MovesPlayed, _, _, 2, _], none) :- 
     MovesPlayed > 26, !.    % Need at least 4 moves to win
 
-game_over([_, [FirstLine | Board],  _, _, _, _, _, BoardSize, _], Winner) :- % Checks for a win condition for both players, Board 4x4
-    length(Board, Size),
-    process_line([FirstLine | Board], BoardSize, Size, FirstLine, 1, [], Stack1),
+game_over([_, [FirstLine | Board],  _, _, _, _, _, _, _], Winner) :- % Checks for a win condition for both players, Board 4x4
+    length([FirstLine | Board], Size),
+    process_line([FirstLine | Board], Size, Size, FirstLine, 1, [], Stack1),
     dfs([FirstLine | Board], 'W', Stack1, [], Visited), !,
     verify_white_win(Visited, WhiteWin), !,
 
-    process_column([FirstLine | Board], BoardSize, 1, [FirstLine | Board], 1, [], Stack2),
+    process_column([FirstLine | Board], Size, 1, [FirstLine | Board], 1, [], Stack2),
     dfs([FirstLine | Board], 'B', Stack2, [], Visited2), !, 
     verify_black_win(Size, Visited2, BlackWin), !,
-    write([Visited, Visited2]),
+    
     decide_winner(WhiteWin, BlackWin, Winner).
 
 decide_winner(true, true, 'T').
