@@ -253,6 +253,16 @@ print_banner_final(Winner, Color1, Color2):-
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
+print_banner_tie:-
+    Size is 60, Symbol = 0x2551,
+    write(' '), put_code_color(0x2554, white), print_n_code(Size, 0x2550, white), put_code_color(0x2557, white), nl,
+    write(' '), line(1, Symbol, Size),
+    write(' '), word('Game tied!', Symbol, Size),
+    write(' '), line(1, Symbol, Size), write(' '), line(1, Symbol, Size),
+    write(' '), word('1 -> Play again               2 -> Exit ', Symbol, Size),
+    write(' '), line(1, Symbol, Size),
+    write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
+
 % banner_final_helper(+Winner, +Color1, +Color2, -Text, -NewColor)
 % Given a winner and both game colors, gives a full text of the player and his own color.
 banner_final_helper('p1', Color1, _, 'Player 1', Color1).
