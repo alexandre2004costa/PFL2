@@ -151,7 +151,8 @@ levels(2, 3, [
     [0, 0, 0, 0, 0, 0, 0, 0]
 ]).
 
-
+% piece_from_number(+Number, -Piece).
+% Maps the input number to a piece.
 piece_from_number(1, piece1).
 piece_from_number(2, piece2).
 piece_from_number(3, piece3).

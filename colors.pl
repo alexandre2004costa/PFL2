@@ -27,7 +27,7 @@ put_code_color(C, Color) :-
     reset_color.
 
 % write_color(+Text, +Color)
-% Writes a string (Text) in the specified color (Color) and resets the color afterward
+% Writes a string in the specified color and resets the color afterward
 write_color(Text, Color) :-
     color_code(Color, Code),
     format("~s~w~s", [Code, Text, "\e[0m"]).
@@ -69,12 +69,12 @@ read_input_colors(Color1, Color2) :-
 
 % validate_input_colors(-Color)
 % Reads and validates the user input, mapping a valid number to a color name
-% If the input is invalid, prompts the user again
 validate_input_colors(Color) :-
     read(InputN),
-    (   integer(InputN), InputN >= 1, InputN =< 8,
-        number_to_color(InputN, Color) % Convert to color
-    ->  true
-    ;   write('Invalid. Choose a number between 1 and 8. '),
-        validate_input_colors(Color)
-    ).
+    integer(InputN), InputN >= 1, InputN =< 8,
+    number_to_color(InputN, Color). % Convert to color
+
+% If the input is invalid, prompts the user again
+validate_input_colors(Color) :-
+    write('Invalid. Choose a number between 1 and 8. '),
+    validate_input_colors(Color).
