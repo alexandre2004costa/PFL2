@@ -151,7 +151,7 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, 
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),  
     final_ratio(Winner, MoveRatio, FinalRatio),
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, FinalRatio]),
-    handle_game(Mode, Winner, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], FinalRatio).
+    handle_game(Mode, Winner, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]).
 
 % final_ratio(+Winner, +MoveRatio, -NewMoveRatio)
 % Determines a new ratio if there is a winner. 
@@ -159,17 +159,17 @@ final_ratio('p1', _, 1).
 final_ratio('p2', _, 0).
 final_ratio(_, MoveRatio, MoveRatio).
 
-% handle_game(+Mode, +Winner, +GameState, +NewMoveRatio)
+% handle_game(+Mode, +Winner, +GameState)
 % Handles the current game state. 
 % If there is a tie or a winner, the game ends. If not, it handles the next move.
-handle_game(_, 'T', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], _) :- 
+handle_game(_, 'T', [_, _, _, _, _, Color1, Color2, BoardSize, BoardStyle]) :- 
     write('Game tied!'), nl,
     state(initial, Color1, Color2, BoardSize, BoardStyle).
-handle_game(_, Winner, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], _) :-
+handle_game(_, Winner, [_, _, _, _, _, Color1, Color2, BoardSize, BoardStyle]) :-
     Winner \= none,
     print_banner_final(Winner, Color1, Color2),
     state(winner, Color1, Color2, BoardSize, BoardStyle).
-handle_game(Mode, _, State, MoveRatio) :-
+handle_game(Mode, _, State) :-
     what_move(Mode, State, N, X, Y, NewMoveRatio, Exit),
     handle_move(Mode, State, [N, X, Y], Exit, NewMoveRatio).
 
@@ -304,11 +304,11 @@ read_input_coordinates(BoardSize, Levels, X, Y) :-
 
 % validate_input_coordinates(+BoardSize, +Levels, +InputX, +InputY, -X, -Y)
 % Validates the X and Y coordinates entered by the user.
-validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
+validate_input_coordinates(BoardSize, Levels, InputX, _, X, Y) :-
     \+ integer(InputX),
     write('The coordinates must be numbers'), nl, nl,
     read_input_coordinates(BoardSize, Levels, X, Y).
-validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
+validate_input_coordinates(BoardSize, Levels, _, InputY, X, Y) :-
      \+ integer(InputY),
     write('The coordinates must be numbers'), nl, nl,
     read_input_coordinates(BoardSize, Levels, X, Y). 
@@ -339,7 +339,7 @@ validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
 
 % valid_moves(+GameState, -ListOfMoves)
 % Generates all valid moves for the current game state.
-valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ListOfMoves) :-
+valid_moves([_, _, Levels, _, _, _, _, BoardSize, _], ListOfMoves) :-
     setof([N, X, Y], (
         generate_coordinates(1, 4, N),
         generate_coordinates(1, 9, X),
@@ -481,7 +481,7 @@ count_block([], _, 0).
 count_block([Elem | Rest], Block, Count):-
     count_block(Rest, Block, RestCount),
     Elem = Block, Count is RestCount + 1.
-count_block([Elem | Rest], Block, Count):-
+count_block([_ | Rest], Block, Count):-
     count_block(Rest, Block, RestCount),
     Count is RestCount.
 
@@ -527,7 +527,7 @@ update_winning_move(Winner, Move, WMove, WWin, BMove, BWin):-
 update_winning_move(Winner, Move, WMove, WWin, BMove, BWin):-
     Winner = 'p2', 
     WMove = none, WWin = false, BMove = Move, BWin = true.
-update_winning_move(Winner, Move, WMove, WWin, BMove, BWin):-
+update_winning_move(_, _, WMove, WWin, BMove, BWin):-
     WMove = none, WWin = false, BMove = none, BWin = false.
 
 % check_winner_1(+Winner, +Move, +NextWMove, +NextWWin, -WMove, -WWin)
