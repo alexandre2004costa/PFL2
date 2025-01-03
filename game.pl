@@ -6,7 +6,7 @@
 :- consult(colors).
 
 
-% Menu ------------------------------------------------------------------------------------------------
+% Menu ---------------------------------------------------------------------------------------------------------------------------
  
 % state(+CurrentState, +Color1, +Color2)
 % Handles the current state of the game and transitions to the next state based on user input or game logic
@@ -43,7 +43,6 @@ state(colors, _, _, _, _):-
 % Handles the board_size state, allowing the user to change the board size
 state(board_size, Color1, Color2, _, BoardStyle):-
     print_banner_board_size,
-    write('Banner'),
     read_option(Option, 2),
     state(initial, Color1, Color2, Option, BoardStyle). 
 
@@ -125,88 +124,97 @@ transition(_, _, initial).
 
 
 
-% Play ------------------------------------------------------------------------------------------------
+% Play -----------------------------------------------------------------------------------------------------------------------------
+
+% play/0
+% Opens the game menu and start the game cycle
+play:- state(initial, white, white, 1, 1).
 
 
-initial_state([Player, OtherPlayer, Color1, Color2, BoardSize, BoardStyle], [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]):-
-    board(BoardSize, BoardStyle, Board, MovesLeft),
-    levels(BoardSize, BoardStyle, Levels).
-
-play :- state(initial, white, white, 1, 1).
-
+% play_game(+Mode, +Color1, +Color2, +BoardSize, +BoardStyle)
+% Starts the game in the specified mode with given player colors, board size, and board style.
+% It initiates the game state and the first turn.
 play_game(Mode, Color1, Color2, BoardSize, BoardStyle):-
     initial_state(['p1', 'p2', Color1, Color2, BoardSize, BoardStyle], GameState),
     play_turn(Mode, GameState, 0.5).
 
+% initial_state(+GameConfig, -GameState)
+% Sets up the initial state of the game, generating the game state.
+initial_state([Player, OtherPlayer, Color1, Color2, BoardSize, BoardStyle], [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]):-
+    board(BoardSize, BoardStyle, Board, MovesLeft),
+    levels(BoardSize, BoardStyle, Levels).
 
+
+% play_turn(+Mode, +GameState, +MoveRatio)
+% Handles a player turn, displaying the game and a ratio indicating how well each player is. 
+% If the game is not over, continues to the next turn.
 play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :- 
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),  
     final_ratio(Winner, MoveRatio, FinalRatio),
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, FinalRatio]),
     handle_game(Mode, Winner, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], FinalRatio).
 
+% final_ratio(+Winner, +MoveRatio, -NewMoveRatio)
+% Determines a new ratio if there is a winner. 
 final_ratio('p1', _, 1).
 final_ratio('p2', _, 0).
 final_ratio(_, MoveRatio, MoveRatio).
 
+% handle_game(+Mode, +Winner, +GameState, +NewMoveRatio)
+% Handles the current game state. 
+% If there is a tie or a winner, the game ends. If not, it handles the next move.
 handle_game(_, 'T', _, _) :- 
     write('Game tied!'), nl,
     state(initial, Color1, Color2, BoardSize, BoardStyle).
-
 handle_game(_, Winner, _, _) :-
     Winner \= none,
     print_banner_final(Winner, Color1, Color2),
     state(winner, Color1, Color2, BoardSize, BoardStyle).
-
 handle_game(Mode, _, State, MoveRatio) :-
     what_move(Mode, State, N, X, Y, NewMoveRatio, Exit),
     handle_move(Mode, State, [N, X, Y], Exit, NewMoveRatio).
 
+% handle_move(+Mode, +GameState, +Move, +Exit, +NewMoveRatio)
+% Processes a player move. 
+% If the player does not choose to exit the game, it updates the game state and continues the game.
 handle_move(Mode, State, [N, X, Y], false, NewMoveRatio) :-
     move(State, [N, X, Y], NewState),
     play_turn(Mode, NewState, NewMoveRatio).
-
 handle_move(_, [_, _, _, OtherPlayer, _, Color1, Color2, BoardSize, BoardStyle], _, true, _) :-
     print_banner_final(OtherPlayer, Color1, Color2),
     state(winner, Color1, Color2, BoardSize, BoardStyle).
 
 
-player_move(GameState, N, X, Y, MoveRatio, true) :-
-    MoveRatio = 0.
-player_move(GameState, N, X, Y, MoveRatio, false) :-
-    move(GameState, [N, X, Y], NewGameState),
-    value(NewGameState, MoveRatio).
-
-% Handles moves for different game modes
+% what_move(+Mode, +GameState, -N, -X, -Y, -MoveRatio, -Exit)
+% Gets the moves for different game modes
 what_move('PlayerVsPlayer',[Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
     read_input(N,X,Y, BoardSize, Levels, Exit),
     player_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit).
-    
+
 what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
     read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit).
+    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
 
 what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N, X, Y], MoveRatio).
 
 what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
     read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit).
+    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
 
 what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N, X, Y], MoveRatio).
 
 what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
     read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit).
+    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
 
 what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, [N, X, Y], MoveRatio).
 
 what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
     read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit).
-
+    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
 
 what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, [N, X, Y], MoveRatio).
@@ -230,8 +238,16 @@ what_move('Pc_2VsPc_2', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, 
     choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, [N, X, Y], MoveRatio).
 
 
+% player_move(+GameState, +Move, +Exit, -MoveRatio).
+% Get the ratio based on the user player exiting the game or not.
+player_move(_, _, true, MoveRatio) :-
+    MoveRatio = 0.
+player_move(GameState, Move, false, MoveRatio) :-
+    move(GameState, Move, NewGameState),
+    value(NewGameState, MoveRatio).
 
-% Validate Inputs --------------------------------------------------------------------------------------
+
+% Validation of Inputs ------------------------------------------------------------------------------------------------------------
 read_option(Option, N) :-
     write('Option: '), nl,
     read(Input),
@@ -306,7 +322,8 @@ validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
     write('Invalid coordinates. Try again.'), nl,
     read_input_coordinates(X, Y, BoardSize, Levels).
 
-% Game ------------------------------------------------------------------------------------------
+
+% Game ----------------------------------------------------------------------------------------------------------------------------
 valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ListOfMoves) :-
     setof([N, X, Y], (
         generate_coordinates(1, 4, N),
