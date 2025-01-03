@@ -14,21 +14,21 @@
 % Handles the initial state, allowing the user to choose to play, exit or change configurations
 state(initial, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_menu(Color1, Color2), 
-    read_option(Option, 3),
+    read_option(3, Option),
     transition(initial, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle). 
 
 % Handles the mode state, allowing the user to choose a game mode
 state(mode, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_play,  
-    read_option(Option, 3),
+    read_option(3, Option),
     transition(mode, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle). 
 
 % Handles the config state, allowing the user to change some configurations
 state(config, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_config,  
-    read_option(Option, 3),
+    read_option(3, Option),
     transition(config, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle). 
 
@@ -43,33 +43,33 @@ state(colors, _, _, _, _):-
 % Handles the board_size state, allowing the user to change the board size
 state(board_size, Color1, Color2, _, BoardStyle):-
     print_banner_board_size,
-    read_option(Option, 2),
+    read_option(2, Option),
     state(initial, Color1, Color2, Option, BoardStyle). 
 
 % Handles the board_style state, allowing the user to change the board style
 state(board_style, Color1, Color2, BoardSize, _):-
     print_banner_board_style,
-    read_option(Option, 3),
+    read_option(3, Option),
     state(initial, Color1, Color2, BoardSize, Option). 
 
 
 % Handles the state for a player vs computer game mode
 state(play_uc, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_level,
-    read_option(Option, 2),
+    read_option(2, Option),
     transition(play_uc, Option, NextState), 
     state(NextState, Option, Color1, Color2, BoardSize, BoardStyle).
 
 % Handles the state for a computer vs computer game mode
 state(play_cc, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_pc,
-    read_option(Option, 4),
+    read_option(4, Option),
     transition(play_cc, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle).
 
 % Handles the state when a winner is declared
 state(winner, Color1, Color2, BoardSize, BoardStyle) :-
-    read_option(Option, 2),
+    read_option(2, Option),
     transition(winner, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle).
 
@@ -81,7 +81,7 @@ state(exit, _, _, _, _) :-
 % Handles the state where the player chooses whether they or the computer starts
 state(play_uc_choose_start, LastOption, Color1, Color2, BoardSize, BoardStyle):-
     print_banner_starter,
-    read_option(Option, 2),
+    read_option(2, Option),
     transition(play_uc_choose_start, LastOption, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle).
 
@@ -121,7 +121,6 @@ transition(play_cc, 4, levelCC22).
 transition(winner, 1, initial).
 transition(winner, 2, exit).
 transition(_, _, initial).
-
 
 
 % Play -----------------------------------------------------------------------------------------------------------------------------
@@ -188,33 +187,33 @@ handle_move(_, [_, _, _, OtherPlayer, _, Color1, Color2, BoardSize, BoardStyle],
 % what_move(+Mode, +GameState, -N, -X, -Y, -MoveRatio, -Exit)
 % Gets the moves for different game modes
 what_move('PlayerVsPlayer',[Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit).
+    read_input(BoardSize, Levels, N, X, Y, Exit),
+    player_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
+    read_input(BoardSize, Levels, N, X, Y, Exit),
+    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N, X, Y], MoveRatio).
 
 what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
+    read_input(BoardSize, Levels, N, X, Y, Exit),
+    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N, X, Y], MoveRatio).
 
 what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
+    read_input(BoardSize, Levels, N, X, Y, Exit),
+    player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, [N, X, Y], MoveRatio).
 
 what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(N,X,Y, BoardSize, Levels, Exit),
-    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], MoveRatio, Exit).
+    read_input(BoardSize, Levels, N, X, Y, Exit),
+    player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, [N, X, Y], MoveRatio).
@@ -248,79 +247,92 @@ player_move(GameState, Move, false, MoveRatio) :-
 
 
 % Validation of Inputs ------------------------------------------------------------------------------------------------------------
-read_option(Option, N) :-
+
+% read_option(+Number, -Option) 
+% Prompts the user to select an option between 1 and N and stores it. 
+read_option(N, Option) :-
     write('Option: '), nl,
     read(Input),
     validate_option(Input, N, Option).
 
+% validate_option(+Input, +Number, -Option)
+% Validates the user input for the option
 validate_option(Input, N, Option) :-
     integer(Input), Input > 0, Input =< N,
     Option is Input, nl.
 validate_option(_, N, Option) :-
     write('Invalid input. '),
-    read_option(Option, N).
+    read_option(N, Option).
 
 
-read_input(N, X, Y, BoardSize, Levels, Exit) :-
+% read_input(+BoardSize, +Levels, -Number, -X, -Y, -Exit)
+% Reads the user input about their move or decision to exit the game.
+read_input(BoardSize, Levels, N, X, Y, Exit) :-
     write('Choose the type of block (1-4) or type "exit" to give up: '),
-    validate_input_type(N, X, Y, BoardSize, Levels, Exit), nl.
-    
-validate_input_type(N, X, Y, BoardSize, Levels, Exit) :-
-    read(InputN),
-    process_input_type(InputN, N, X, Y, BoardSize, Levels, Exit).
+    read_input_type(BoardSize, Levels, N, X, Y, Exit), nl.
 
-process_input_type(InputN, N, X, Y, BoardSize, Levels, false) :-
+% read_input_type(+BoardSize, +Levels, -Number, -X, -Y, -Exit)
+% Reads the type of block input by the user
+read_input_type(BoardSize, Levels, N, X, Y, Exit) :-
+    read(InputN),
+    validate_input_type(BoardSize, Levels, InputN, N, X, Y, Exit).
+
+% validate_input_type(+BoardSize, +Levels, +InputN, -Number, -X, -Y, -Exit) 
+% Validates the type of block input by the user or the choice to exit
+validate_input_type(BoardSize, Levels, InputN, N, X, Y, false) :-
     integer(InputN), InputN >= 1, InputN =< 4,
     N = InputN,
-    read_input_coordinates(X, Y, BoardSize, Levels), nl.
-process_input_type('exit', _, _, _, _, _, true).
-process_input_type(_, N, X, Y, BoardSize, Levels, Exit) :-
+    read_input_coordinates(BoardSize, Levels, X, Y), nl.
+validate_input_type( _, _, 'exit', _, _, _, true).
+validate_input_type(BoardSize, Levels, _, N, X, Y, Exit) :-
     write('Invalid. Choose a number between 1 and 4 or type exit.'),
-    validate_input_type(N, X, Y, BoardSize, Levels, Exit).
+    read_input_type(BoardSize, Levels, N, X, Y, Exit).
 
 
-read_input_coordinates(X, Y, BoardSize, Levels) :-
+% read_input_coordinates(+BoardSize, +Levels, -X, -Y)
+% Prompts the user to give X and Y coordinates of the move based on the board.
+read_input_coordinates(BoardSize, Levels, X, Y) :-
     BoardSize = 1, 
     write('Choose the coordinate X (1-9): '), read(InputX),
     write('Choose the coordinate Y (1-9): '), read(InputY),
-    validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels).
-
-read_input_coordinates(X, Y, BoardSize, Levels) :-
+    validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y).
+read_input_coordinates(BoardSize, Levels, X, Y) :-
     BoardSize = 2,
     write('Choose the coordinate X (1-7): '), read(InputX),
     write('Choose the coordinate Y (1-7): '), read(InputY),
-    validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels).
+    validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y).
 
-
-validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+% validate_input_coordinates(+BoardSize, +Levels, +InputX, +InputY, -X, -Y)
+% Validates the X and Y coordinates entered by the user.
+validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
     \+ integer(InputX),
     write('The coordinates must be numbers'), nl, nl,
-    read_input_coordinates(X, Y, BoardSize, Levels).
-validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+    read_input_coordinates(BoardSize, Levels, X, Y).
+validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
      \+ integer(InputY),
     write('The coordinates must be numbers'), nl, nl,
-    read_input_coordinates(X, Y, BoardSize, Levels). 
+    read_input_coordinates(BoardSize, Levels, X, Y). 
 
-validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
     BoardSize = 1, (InputX < 1; InputX > 9; InputY < 1; InputY > 9), % é suposto ter uma condição para cada?
     write('The coordinates must be between 1 and 9.'), nl, nl,
-    read_input_coordinates(X, Y, BoardSize, Levels). 
+    read_input_coordinates(BoardSize, Levels, X, Y). 
 
-validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
     BoardSize = 2, (InputX < 1; InputX > 7; InputY < 1; InputY > 7),
     write('The coordinates must be between 1 and 7.'), nl, nl,
-    read_input_coordinates(X, Y, BoardSize, Levels). 
+    read_input_coordinates(BoardSize, Levels, X, Y). 
 
-validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
     validate_coordinates(InputX, InputY, BoardSize, Levels, Valid),
     Valid =:= 1,
     X = InputX, Y = InputY, !.
 
-validate_input_coordinates(InputX, InputY, X, Y, BoardSize, Levels) :-
+validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
     validate_coordinates(InputX, InputY, BoardSize, Levels, Valid),
     Valid =:= 0, 
     write('Invalid coordinates. Try again.'), nl,
-    read_input_coordinates(X, Y, BoardSize, Levels).
+    read_input_coordinates(BoardSize, Levels, X, Y).
 
 
 % Game ----------------------------------------------------------------------------------------------------------------------------
@@ -455,7 +467,7 @@ get_value(_, _, Player, Board, Compensation, Value):-
     Value is BaseValue + Compensation.
 
 
-value([_, _, _, _, 0, _], 0.5).
+value([_, _, _, _, 0, _, _, _, _], 0.5).
 value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ClampedValue):-
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),
