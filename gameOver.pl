@@ -161,16 +161,3 @@ game_over([_, [FirstLine | Board],  _, _, _, _, _, _, _], Winner) :- % Checks fo
 decide_winner(true, true, 'T').
 decide_winner(true, false, 'p1').
 decide_winner(false, true, 'p2').
-%decide_winner(_, _, none).
-
-
-testeY:-
-    B = [['S','S','S','S','S','S','S','S','S','S'],['S','S','S','S','S','S','S','S','S','S'],['W','S','S','S','S','S','S','S','S','S'],['W','S','S','S','S','S','S','S','S','S'],['W','S','S','S','W','W','S','S','S','S'],['W','S','S','S','W','W','S','S','S','S'],['W','S','S','S','S','S','W','W','W','W'],['W','S','S','S','S','S','W','W','W','W'],['W','S','S','S','S','S','S','S','S','S'],['W','S','S','S','S','S','S','S','S','S']],
-    L = [[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,1,1,0,0,0,0],[0,0,0,0,1,1,0,0,0,0],[0,0,0,0,0,0,1,1,1,1],[0,0,0,0,0,0,1,1,1,1],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]],
-    %write(Moves),
-    %value(['p1',Bo,Le,'p2',52], Value),write(Value),nl.
-    %game_over(['p1', B, L, 'p2', 20, red, blue, 1, 1], Winner),
-    valid_moves(['p1', B, L, 'p2', 20, red, blue, 1, 1], Moves),
-    is_any_winning_move(['p1', B, L, 'p2', 20, red, blue, 1, 1], Moves, [WMove, WWin], [BMove, BWin]),!,
-    write([WMove, WWin]), write([BMove, BWin]),
-    write(Winner).
