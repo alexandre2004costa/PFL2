@@ -436,7 +436,11 @@ display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boa
 display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, Ratio]) :-
     length(Board, BSize),
     display_board(Board, Levels, Color1, Color2, Ratio, BSize),!, nl,
+    display_turn(Player, MovesLeft, Color1, Color2, Winner), !.
 
+% display_turn(Player, MovesLeft, Color1, Color2, Winner)
+% displays next turn box in case of no winner
+display_turn(Player, MovesLeft, Color1, Color2, none):-
     Size is 73,
     helper_player_color(Player, Color1, Color2, Color),
     write(' '), put_code_color(0x2554, Color), print_n_code(Size, 0x2550, Color), put_code_color(0x2557, Color), nl,
@@ -444,6 +448,9 @@ display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boa
     write(' '), put_code_color(0x2551, Color), print_n(Size, ' '), put_code_color(0x2551, Color), nl,
     display_pieces(Color1, Color2, Color), 
     write(' '), put_code_color(0x255A, Color), print_n_code(Size, 0x2550, Color), put_code_color(0x255D, Color), nl, nl.
+
+% displays nothing in case of a winner
+display_turn(_, _, _, _, _).
 
 % helper_player_color(+Player, -Color)
 % Maps Player to his Color
