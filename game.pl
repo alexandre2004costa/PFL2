@@ -32,7 +32,7 @@ initial_state([Player, OtherPlayer, Color1, Color2, BoardSize, BoardStyle], [Pla
 % play_turn(+Mode, +GameState, +MoveRatio)
 % Handles a player turn, displaying the game and a ratio indicating how well each player is. 
 % If the game is not over, continues to the next turn.
-play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :- 
+play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :-   
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),  
     final_ratio(Winner, MoveRatio, FinalRatio),
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, FinalRatio]),
@@ -220,6 +220,8 @@ validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
 
 % valid_moves(+GameState, -ListOfMoves)
 % Generates all valid moves for the current game state.
+% The function iterates through all possible combinations of move parameters (N, X, Y), where N represents the piece type, and X and Y represent the coordinates on the board. 
+% For each combination, it checks if the coordinates are within the bounds of the board and valid according to the game's rules, using the validate_coordinates predicate.
 valid_moves([_, Board, Levels, _, _, _, _, _, _], ListOfMoves) :-
     length(Board, Size),
     setof([N, X, Y], (
@@ -273,6 +275,8 @@ validate_coordinates(_, _, _, _, Valid) :-
 
 
 % move(+GameState, +Move, -NewGameState)
+% Responsible for executing a move in the game, updating the game state based on the parameters [N, X, Y], where N represents the type of piece and [X, Y] are the move coordinates. First, the move is validated using the validate_coordinates function to ensure that the position is valid and adheres to the game rules. Then, the piece type (N) is converted into its corresponding configuration (PieceConfig), which defines how it interacts with the board. The function updates the main board by modifying the four cells affected by the 2x2 piece, using the update_piece predicate to apply the changes according to the piece's configuration.
+% In addition to the board, the level of the affected cells is updated in the Levels structure, incrementing the value of the same four positions by 1. After all updates are applied, the active player (Player) is swapped with the inactive player (OtherPlayer), and the number of remaining moves (MovesLeft) is decremented by 1.
 % Executes a move by placing a block of type N at coordinates (X, Y) on the board, if the move is valid.
 move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, Color1, Color2, BoardSize, BoardStyle]):-
     length(Board, Size),
@@ -306,6 +310,9 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, 
 
 
 % value(+GameState, +Player, -Value)
+% The value function evaluates the game state for a given player, determining how favorable it is. It assigns a neutral value (0.5) if the turn is over. Otherwise, it uses ratio_value to calculate a score (0 to 1) based on potential winning or blocking moves and strategic factors.
+% ratio_value prioritizes winning moves and considers the distribution of favorable blocks on the board. get_compensation adjusts the score to account for immediate threats or advantages, while get_ratio_value combines block counts and compensation to calculate the final score, clamped to [0, 1].
+% This approach balances immediate tactics with broader strategy, providing a fair evaluation of the game state.
 % Returns a value indicating how bad or good the game state is to the given player.
 value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Player, Value):-
     ratio_value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Value), !.

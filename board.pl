@@ -64,6 +64,16 @@ board(2, 2,[
     ['B', 'W', 'B', 'W', 'B', 'W', 'B', 'W']
 ], 14).
 
+board(2, 3, [
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'W', 'B', 'W', 'B', 'S', 'S'],
+    ['S', 'S', 'B', 'W', 'B', 'W', 'S', 'S'],
+    ['S', 'S', 'W', 'B', 'W', 'B', 'S', 'S'],
+    ['S', 'S', 'B', 'W', 'B', 'W', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
+    ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
+], 26).
 % levels(+BoardSize, +BoardStyle, -BoardLevels)
 % Represents the height level of each cell on the board.
 % Zero means an empty space and higher numbers represent stacked pieces.
