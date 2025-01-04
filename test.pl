@@ -43,14 +43,13 @@ teste:-
     value(['p1', B, L, 'p2', 10, red, blue, 1, 1], 'p1', Ratio),
     display_game(['p1', B, L, 'p2', 10, red, blue, 1, 1, Ratio]),
     valid_moves(['p1', [['S']], [[0]], 'p2', 10, red, blue, 1, 1], _), 
-    choose_move(['p1', B, L, 'p2', 10, red, blue, 1, 1], 1, [N,X,Y]),
+    choose_move(['p1', B, L, 'p2', 10, red, blue, 1, 1], 2, [N,X,Y]),
     move(['p1', B, L, 'p2', 10, red, blue, 1, 1], [N,X,Y], [P, B2, L2, OP, M2, C1, C2, BSI, BST]),
     value([P, B2, L2, OP, M2, C1, C2, BSI, BST], 'p2', NewRatio),
     display_game([P, B2, L2, OP, M2, C1, C2, BSI, BST, NewRatio]),
     game_over([P, B2, L2, OP, M2, C1, C2, BSI, BST], _). 
     
 % Game states for demonstration
-
 gameOverTie:-
     play_game('Pc_2VsPc_2', red, blue, 2, 2).
 
@@ -71,3 +70,65 @@ gameBlock:-
 
 gameAI2win:-
     play_game('Pc_2VsPc_2', blue, blue, 2, 3).
+
+% All modes and states test
+fulltest:-
+    play_game('PlayerVsPlayer', red, blue, 1, 1),
+    play_game('PlayerVsPc_1', red, blue, 1, 1),
+    play_game('Pc_1VsPlayer', red, blue, 1, 1),
+    play_game('PlayerVsPc_2', red, blue, 1, 1),
+    play_game('Pc_2VsPlayer', red, blue, 1, 1),
+    play_game('Pc_1VsPc_1', red, blue, 1, 1),
+    play_game('Pc_1VsPc_2', red, blue, 1, 1),
+    play_game('Pc_2VsPc_1', red, blue, 1, 1),
+    play_game('Pc_2VsPc_2', red, blue, 1, 1),
+
+    play_game('PlayerVsPlayer', red, blue, 1, 2),
+    play_game('PlayerVsPc_1', red, blue, 1, 2),
+    play_game('Pc_1VsPlayer', red, blue, 1, 2),
+    play_game('PlayerVsPc_2', red, blue, 1, 2),
+    play_game('Pc_2VsPlayer', red, blue, 1, 2),
+    play_game('Pc_1VsPc_1', red, blue, 1, 2),
+    play_game('Pc_1VsPc_2', red, blue, 1, 2),
+    play_game('Pc_2VsPc_1', red, blue, 1, 2),
+    play_game('Pc_2VsPc_2', red, blue, 1, 2),
+
+    play_game('PlayerVsPlayer', red, blue, 1, 3),
+    play_game('PlayerVsPc_1', red, blue, 1, 3),
+    play_game('Pc_1VsPlayer', red, blue, 1, 3),
+    play_game('PlayerVsPc_2', red, blue, 1, 3),
+    play_game('Pc_2VsPlayer', red, blue, 1, 3),
+    play_game('Pc_1VsPc_1', red, blue, 1, 3),
+    play_game('Pc_1VsPc_2', red, blue, 1, 3),
+    play_game('Pc_2VsPc_1', red, blue, 1, 3),
+    play_game('Pc_2VsPc_2', red, blue, 1, 3),
+
+    play_game('PlayerVsPlayer', red, blue, 2, 1),
+    play_game('PlayerVsPc_1', red, blue, 2, 1),
+    play_game('Pc_1VsPlayer', red, blue, 2, 1),
+    play_game('PlayerVsPc_2', red, blue, 2, 1),
+    play_game('Pc_2VsPlayer', red, blue, 2, 1),
+    play_game('Pc_1VsPc_1', red, blue, 2, 1),
+    play_game('Pc_1VsPc_2', red, blue, 2, 1),
+    play_game('Pc_2VsPc_1', red, blue, 2, 1),
+    play_game('Pc_2VsPc_2', red, blue, 2, 1),
+
+    play_game('PlayerVsPlayer', red, blue, 2, 2),
+    play_game('PlayerVsPc_1', red, blue, 2, 2),
+    play_game('Pc_1VsPlayer', red, blue, 2, 2),
+    play_game('PlayerVsPc_2', red, blue, 2, 2),
+    play_game('Pc_2VsPlayer', red, blue, 2, 2),
+    play_game('Pc_1VsPc_1', red, blue, 2, 2),
+    play_game('Pc_1VsPc_2', red, blue, 2, 2),
+    play_game('Pc_2VsPc_1', red, blue, 2, 2),
+    play_game('Pc_2VsPc_2', red, blue, 2, 2),
+
+    play_game('PlayerVsPlayer', red, blue, 2, 3),
+    play_game('PlayerVsPc_1', red, blue, 2, 3),
+    play_game('Pc_1VsPlayer', red, blue, 2, 3),
+    play_game('PlayerVsPc_2', red, blue, 2, 3),
+    play_game('Pc_2VsPlayer', red, blue, 2, 3),
+    play_game('Pc_1VsPc_1', red, blue, 2, 3),
+    play_game('Pc_1VsPc_2', red, blue, 2, 3),
+    play_game('Pc_2VsPc_1', red, blue, 2, 3),
+    play_game('Pc_2VsPc_2', red, blue, 2, 3).
