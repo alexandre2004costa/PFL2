@@ -138,12 +138,6 @@ verify_black_win(Size, [[_, _] | Visited], Success) :-
 
 game_over([_, [_ | _], _, _, 0, _, _, _, _], 'T') :- !. % No left moves, tie.
 
-%game_over([_, [_ | _], _, _, MovesPlayed, _, _, 1, _], none) :- 
-%    MovesPlayed > 49, !.    % Need at least 5 moves to win
-
-%game_over([_, [_ | _], _, _, MovesPlayed, _, _, 2, _], none) :- 
-%    MovesPlayed > 26, !.    % Need at least 4 moves to win
-
 game_over([_, [FirstLine | Board],  _, _, _, _, _, _, _], Winner) :- % Checks for a win condition for both players
     length([FirstLine | Board], Size),
     process_line([FirstLine | Board], Size, Size, FirstLine, 1, [], Stack1),
@@ -157,7 +151,7 @@ game_over([_, [FirstLine | Board],  _, _, _, _, _, _, _], Winner) :- % Checks fo
     decide_winner(WhiteWin, BlackWin, Winner).
 
 % decide_winner(+WhiteWin, +BlackWin, -Winner)
-% Given white and black wins/losts, return the official winner.
+% Given white and black wins/losts, return the official winner, if there is one
 decide_winner(true, true, 'T').
 decide_winner(true, false, 'p1').
 decide_winner(false, true, 'p2').

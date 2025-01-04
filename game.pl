@@ -236,6 +236,8 @@ valid_moves([_, Board, Levels, _, _, _, _, _, _], ListOfMoves) :-
         validate_coordinates(X, Y, Size, Levels, 1)
     ), ListOfMoves).
 
+valid_moves([_, _, _, _, _, _, _, _, _], []).
+
 % generate_coordinates(+Low, +High, -Value)
 % Generates all integers between Low and High.
 generate_coordinates(Low, High, Low) :-
@@ -245,7 +247,7 @@ generate_coordinates(Low, High, Value) :-
     Next is Low + 1,
     generate_coordinates(Next, High, Value).
 
-% validate_coordinates(+X, +Y, +Size, +Levels, -Valid)
+% validate_coordinates(+X, +Y, +Size, +Levels, -Valid);
 % Validates if the coordinates (X, Y) can be placed on the board given the levels of the blocks and the board size.
 validate_coordinates(X, Y, Size, Levels, Valid) :-
     BoardX is X-1, 
