@@ -4,7 +4,8 @@
 :- consult(board). 
 :- consult(display). 
 :- consult(colors).
-
+:- consult(menu).
+:- consult(test).
 
 % Menu ---------------------------------------------------------------------------------------------------------------------------
  
@@ -121,7 +122,6 @@ transition(play_cc, 4, levelCC22).
 transition(winner, 1, initial).
 transition(winner, 2, exit).
 transition(_, _, initial).
-
 
 % Play -----------------------------------------------------------------------------------------------------------------------------
 
@@ -343,12 +343,13 @@ validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
 
 % valid_moves(+GameState, -ListOfMoves)
 % Generates all valid moves for the current game state.
-valid_moves([_, _, Levels, _, _, _, _, BoardSize, _], ListOfMoves) :-
+valid_moves([_, Board, Levels, _, _, _, _, _, _], ListOfMoves) :-
+    length(Board, Size),
     setof([N, X, Y], (
         generate_coordinates(1, 4, N),
         generate_coordinates(1, 9, X),
         generate_coordinates(1, 9, Y),
-        validate_coordinates(X, Y, BoardSize, Levels, 1)
+        validate_coordinates(X, Y, Size, Levels, 1)
     ), ListOfMoves).
 
 % generate_coordinates(+Low, +High, -Value)
@@ -360,17 +361,11 @@ generate_coordinates(Low, High, Value) :-
     Next is Low + 1,
     generate_coordinates(Next, High, Value).
 
-
-% get_board_y(+BoardSize, +Y, -BoardY)
-% Converts a Y to the corresponding board Y coordinate based on the board size.
-get_board_y(1, Y, BoardY):- BoardY is 10 - Y.
-get_board_y(2, Y, BoardY):- BoardY is 8 - Y.
-
-
-% validate_coordinates(+X, +Y, +BoardSize, +Levels, -Valid)
+% validate_coordinates(+X, +Y, +Size, +Levels, -Valid)
 % Validates if the coordinates (X, Y) can be placed on the board given the levels of the blocks and the board size.
-validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
-    BoardX is X-1, get_board_y(BoardSize, Y, BoardY),
+validate_coordinates(X, Y, Size, Levels, Valid) :-
+    BoardX is X-1, 
+    BoardY is Size - Y,
     BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     1 is X mod 2, 1 is BoardY mod 2, 
@@ -380,8 +375,9 @@ validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
     get_value(Levels, BoardY2, BoardX2, Level_RT), Level_RT is 0,
     Valid is 1.
 
-validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
-    BoardX is X-1, get_board_y(BoardSize, Y, BoardY),
+validate_coordinates(X, Y, Size, Levels, Valid) :-
+    BoardX is X-1, 
+    BoardY is Size - Y,
     BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     get_value(Levels, BoardY, BoardX, L1),
@@ -397,18 +393,15 @@ validate_coordinates(_, _, _, _, Valid) :-
     Valid is 0.
 
 
-% get_new_y(+BoardSize,  +Y, -NewY)
-% Converts the given Y to a new value Y coordinate based on the board size.
-get_new_y(1, Y, NewY):- NewY is 10 - Y.
-get_new_y(2, Y, NewY):- NewY is 8 - Y.
-
 % move(+GameState, +Move, -NewGameState)
 % Executes a move by placing a block of type N at coordinates (X, Y) on the board, if the move is valid.
 move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, Color1, Color2, BoardSize, BoardStyle]):-
+    length(Board, Size),
     Moves1 is MovesLeft-1,
-    NewX is X, get_new_y(BoardSize, Y, NewY),
+    NewX is X, 
+    NewY is Size - Y, 
 
-    validate_coordinates(X, Y, BoardSize, Levels, 1),  % Check if its valid
+    validate_coordinates(X, Y, Size, Levels, 1),  % Check if its valid
 
     % Get block
     piece_from_number(N, Piece),
