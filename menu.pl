@@ -69,14 +69,6 @@ state(winner, Color1, Color2, BoardSize, BoardStyle) :-
 state(exit, _, _, _, _) :-
     write('Exiting...'), nl, nl. 
 
-% state(+CurrentState, +LastOption, +Color1, +Color2)
-% Handles the state where the player chooses whether they or the computer starts
-state(play_uc_choose_start, LastOption, Color1, Color2, BoardSize, BoardStyle):-
-    print_banner_starter,
-    read_option(2, Option),
-    transition(play_uc_choose_start, LastOption, Option, NextState), 
-    state(NextState, Color1, Color2, BoardSize, BoardStyle).
-
 % State handlers for different levels of the game
 % Each level represents a specific game mode configuration
 state(play_uu, Color1, Color2, BoardSize, BoardStyle) :- play_game('PlayerVsPlayer', Color1, Color2, BoardSize, BoardStyle).
@@ -88,6 +80,14 @@ state(levelCC11, Color1, Color2, BoardSize, BoardStyle) :- play_game('Pc_1VsPc_1
 state(levelCC12, Color1, Color2, BoardSize, BoardStyle) :- play_game('Pc_1VsPc_2', Color1, Color2, BoardSize, BoardStyle).
 state(levelCC21, Color1, Color2, BoardSize, BoardStyle) :- play_game('Pc_2VsPc_1', Color1, Color2, BoardSize, BoardStyle).
 state(levelCC22, Color1, Color2, BoardSize, BoardStyle) :- play_game('Pc_2VsPc_2', Color1, Color2, BoardSize, BoardStyle).
+
+% state(+CurrentState, +LastOption, +Color1, +Color2)
+% Handles the state where the player chooses whether they or the computer starts
+state(play_uc_choose_start, LastOption, Color1, Color2, BoardSize, BoardStyle):-
+    print_banner_starter,
+    read_option(2, Option),
+    transition(play_uc_choose_start, LastOption, Option, NextState), 
+    state(NextState, Color1, Color2, BoardSize, BoardStyle).
 
 % transition(+CurrentState, +Option, -NextState)
 % Defines state transitions based on the current state and user input
@@ -103,10 +103,6 @@ transition(config, 2, board_size).
 transition(config, 3, board_style).
 transition(config, 4, initial).
 transition(play_uc, _, play_uc_choose_start).
-transition(play_uc_choose_start, 1, 1, levelUC11).
-transition(play_uc_choose_start, 1, 2, levelUC12).
-transition(play_uc_choose_start, 2, 1, levelUC21).
-transition(play_uc_choose_start, 2, 2, levelUC22).
 transition(play_cc, 1, levelCC11).
 transition(play_cc, 2, levelCC12).
 transition(play_cc, 3, levelCC21).
@@ -115,3 +111,8 @@ transition(play_cc, 5, mode).
 transition(winner, 1, initial).
 transition(winner, 2, exit).
 transition(_, _, initial).
+transition(play_uc_choose_start, 1, 1, levelUC11).
+transition(play_uc_choose_start, 1, 2, levelUC12).
+transition(play_uc_choose_start, 2, 1, levelUC21).
+transition(play_uc_choose_start, 2, 2, levelUC22).
+

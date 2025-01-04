@@ -405,15 +405,15 @@ is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Colo
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, Winner),
     update_winning_move(Winner, Move, WMove, WWin, BMove, BWin).
    
-is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move], [none, false], [none, false]).
+is_any_winning_move([_, _, _, _, _, _, _, _, _], [_], [none, false], [none, false]).
    
-is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, _, BoardStyle], [Move|Moves], [WMove, WWin], [BMove, BWin]):-
     winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, Winner),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]),
     check_winner_1(Winner, Move, NextWMove, NextWWin, WMove, WWin),
     check_winner_2(Winner, Move, NextBMove, NextBWin, BMove, BWin).
 
-is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move|Moves], [NextWMove, NextWWin], [NextBMove, NextBWin]):-
+is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [_|Moves], [NextWMove, NextWWin], [NextBMove, NextBWin]):-
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [NextWMove, NextWWin], [NextBMove, NextBWin]).
 
 % winning_move(+GameState, +Move, -Winner)

@@ -42,12 +42,12 @@ teste:-
     levels2(L),
     value(['p1', B, L, 'p2', 10, red, blue, 1, 1], 'p1', Ratio),
     display_game(['p1', B, L, 'p2', 10, red, blue, 1, 1, Ratio]),
-    valid_moves(['p1', [['S']], [[0]], 'p2', 10, red, blue, 1, 1], Moves), 
+    valid_moves(['p1', [['S']], [[0]], 'p2', 10, red, blue, 1, 1], _), 
     choose_move(['p1', B, L, 'p2', 10, red, blue, 1, 1], 1, [N,X,Y]),
     move(['p1', B, L, 'p2', 10, red, blue, 1, 1], [N,X,Y], [P, B2, L2, OP, M2, C1, C2, BSI, BST]),
     value([P, B2, L2, OP, M2, C1, C2, BSI, BST], 'p2', NewRatio),
     display_game([P, B2, L2, OP, M2, C1, C2, BSI, BST, NewRatio]),
-    game_over([P, B2, L2, OP, M2, C1, C2, BSI, BST], Winner). 
+    game_over([P, B2, L2, OP, M2, C1, C2, BSI, BST], _). 
     
 % Game states for demonstration
 
