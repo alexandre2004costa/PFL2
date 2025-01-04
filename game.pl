@@ -21,14 +21,14 @@ state(initial, Color1, Color2, BoardSize, BoardStyle) :-
 % Handles the mode state, allowing the user to choose a game mode
 state(mode, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_play,  
-    read_option(3, Option),
+    read_option(4, Option),
     transition(mode, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle). 
 
 % Handles the config state, allowing the user to change some configurations
 state(config, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_config,  
-    read_option(3, Option),
+    read_option(4, Option),
     transition(config, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle). 
 
@@ -63,7 +63,7 @@ state(play_uc, Color1, Color2, BoardSize, BoardStyle) :-
 % Handles the state for a computer vs computer game mode
 state(play_cc, Color1, Color2, BoardSize, BoardStyle) :-
     print_banner_pc,
-    read_option(4, Option),
+    read_option(5, Option),
     transition(play_cc, Option, NextState), 
     state(NextState, Color1, Color2, BoardSize, BoardStyle).
 
@@ -109,6 +109,7 @@ transition(mode, 4, initial).
 transition(config, 1, colors).
 transition(config, 2, board_size).
 transition(config, 3, board_style).
+transition(config, 4, initial).
 transition(play_uc, _, play_uc_choose_start).
 transition(play_uc_choose_start, 1, 1, levelUC11).
 transition(play_uc_choose_start, 1, 2, levelUC12).
@@ -118,6 +119,7 @@ transition(play_cc, 1, levelCC11).
 transition(play_cc, 2, levelCC12).
 transition(play_cc, 3, levelCC21).
 transition(play_cc, 4, levelCC22).
+transition(play_cc, 5, mode).
 transition(winner, 1, initial).
 transition(winner, 2, exit).
 transition(_, _, initial).

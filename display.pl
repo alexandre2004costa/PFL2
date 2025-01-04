@@ -1,4 +1,5 @@
 % Printing and auxiliar predicates ------------------------------------------------------------------------------------------------
+
 % print_n(+Number, +Char)
 % Prints a character a specified number of times
 print_n(0,_):-!.
@@ -54,11 +55,12 @@ level_color(Size, Ratio, Row, 2) :-
 % Assigns the color of the row and his code, taking into consideration the player obtained from level_color
 get_color_rows(Size, Ratio, Row, Color1, _, Color1, 0x2593):-
     level_color(Size, Ratio, Row, 1).
-
 get_color_rows(Size, Ratio, Row, _, Color2, Color2, 0x2592):-
     level_color(Size, Ratio, Row, 2).
 
+
 % Banners -------------------------------------------------------------------------------------------------------------------------
+
 % print_title(+Size, +Symbol)
 % Prints a personalized title, inside a banner with a specific size and bordered with a chosen symbol.
 print_title(Size, Symbol) :- 
@@ -82,13 +84,11 @@ print_banner_menu(Color1, Color2):-
     print_title(Size, Symbol),
     write(' '), line(1, Symbol, Size), 
     write(' '), line(1, Symbol, Size), 
-    write(' '), word_color_2('1 -> ', Color1, 'Play', Color2, Symbol, Size),
+    write(' '), word_color_2('1 => ', Color1, 'Play', Color2, Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    %word('2-> Instructions', Symbol, Size),
-    %line(1, Symbol, Size),
-    write(' '), word_color_2('2 -> ', Color1, 'Configurations', Color2, Symbol, Size),
+    write(' '), word_color_2('2 => ', Color1, 'Configurations', Color2, Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word_color_2('3 -> ', Color1, 'Exit', Color2, Symbol, Size),
+    write(' '), word_color_2('3 => ', Color1, 'Exit', Color2, Symbol, Size),
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl. 
 
@@ -100,11 +100,13 @@ print_banner_play:-
     write(' '), line(1, Symbol, Size), 
     write(' '), word('Mode', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> User vs User', Symbol, Size),
+    write(' '), word('1 => User vs User', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('2 -> User vs Pc', Symbol, Size),
+    write(' '), word('2 => User vs Pc', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('3 -> Pc vs Pc', Symbol, Size),
+    write(' '), word('3 => Pc vs Pc', Symbol, Size),
+    write(' '), line(1, Symbol, Size),
+    write(' '), word('4 => Go back', Symbol, Size),
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -116,9 +118,9 @@ print_banner_level:-
     write(' '), line(1, Symbol, Size), 
     write(' '), word('PC - AI Level', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> Level 1', Symbol, Size),
+    write(' '), word('1 => Level 1', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('2 -> Level 2', Symbol, Size),
+    write(' '), word('2 => Level 2', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -130,9 +132,9 @@ print_banner_starter:-
     write(' '), line(1, Symbol, Size), 
     write(' '), word('Do you want to be the first to play?', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> Yes', Symbol, Size),
+    write(' '), word('1 => Yes', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('2 -> No ', Symbol, Size),
+    write(' '), word('2 => No ', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -144,14 +146,16 @@ print_banner_pc:-
     write(' '), line(1, Symbol, Size), 
     write(' '), word('What type of battle you want to see?', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> Pc AI 1 Vs Pc AI 1', Symbol, Size),
+    write(' '), word('1 => Pc AI 1 Vs Pc AI 1', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('2 -> Pc AI 1 Vs Pc AI 2', Symbol, Size),
+    write(' '), word('2 => Pc AI 1 Vs Pc AI 2', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('3 -> Pc AI 2 Vs Pc AI 1', Symbol, Size),
+    write(' '), word('3 => Pc AI 2 Vs Pc AI 1', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('4 -> Pc AI 2 Vs Pc AI 2', Symbol, Size),
+    write(' '), word('4 => Pc AI 2 Vs Pc AI 2', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
+    write(' '), word('5 => Go back', Symbol, Size),
+    write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 % print_banner_config/0
@@ -162,12 +166,14 @@ print_banner_config:-
     write(' '), line(1, Symbol, Size), 
     write(' '), word('What do you want to change?', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> Colors', Symbol, Size),
+    write(' '), word('1 => Colors', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('2 -> Board size', Symbol, Size),
+    write(' '), word('2 => Board size', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('3 -> Board style', Symbol, Size),
+    write(' '), word('3 => Board style', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
+    write(' '), word('4 => Go back', Symbol, Size),
+    write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
 % print_banner_colors(+PlayerNumber)
@@ -180,13 +186,13 @@ print_banner_colors(N):-
     write(' '), word(Title, Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x2551, white), print_n(3, ' '),
-        write_color('1 -> ', red), display_code(Letter, red), print_n(2, ' '),
-        write_color('2 -> ', green), display_code(Letter, green), print_n(2, ' '),
-        write_color('3 -> ',yellow ), display_code(Letter, yellow), print_n(2, ' '),
-        write_color('4 -> ',blue ), display_code(Letter, blue), print_n(2, ' '), 
-        write_color('5 -> ',magenta ), display_code(Letter, magenta), print_n(2, ' '),
-        write_color('6 -> ',cyan ), display_code(Letter, cyan), print_n(2, ' '),
-        write_color('7 -> ',white ), display_code(Letter, white), print_n(2, ' '),
+        write_color('1 => ', red), display_code(Letter, red), print_n(2, ' '),
+        write_color('2 => ', green), display_code(Letter, green), print_n(2, ' '),
+        write_color('3 => ',yellow ), display_code(Letter, yellow), print_n(2, ' '),
+        write_color('4 => ',blue ), display_code(Letter, blue), print_n(2, ' '), 
+        write_color('5 => ',magenta ), display_code(Letter, magenta), print_n(2, ' '),
+        write_color('6 => ',cyan ), display_code(Letter, cyan), print_n(2, ' '),
+        write_color('7 => ',white ), display_code(Letter, white), print_n(2, ' '),
         reset_color, print_n(1, ' '), put_code_color(0x2551, white), nl,
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
@@ -204,9 +210,9 @@ print_banner_board_size:-
     write(' '), line(1, Symbol, Size), 
     write(' '), word('What board size do you want?', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> 5 x 5', Symbol, Size),
+    write(' '), word('1 => 5 x 5', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('2 -> 4 x 4', Symbol, Size),
+    write(' '), word('2 => 4 x 4', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -218,11 +224,11 @@ print_banner_board_style:-
     write(' '), line(1, Symbol, Size), 
     write(' '), word('What board style do you want?', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('1 -> Tradicional', Symbol, Size),
+    write(' '), word('1 => Tradicional', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('2 -> Full level 1', Symbol, Size),
+    write(' '), word('2 => Full level 1', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
-    write(' '), word('3 -> Recent option', Symbol, Size),
+    write(' '), word('3 => Recent option', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -235,8 +241,8 @@ print_banner_display_colors(Color1, Color2):-
     write(' '), word('Colors', Symbol, Size),
     write(' '), line(1, Symbol, Size), 
     write(' '), put_code_color(0x2551, white), print_n(11, ' '),
-        write('Player 1 -> '), display_code('W', Color1), display_code('W', Color1), print_n(10, ' '),
-        write('Player 2 -> '), display_code('B', Color2), display_code('B', Color2), print_n(11, ' '), put_code_color(0x2551, white), nl,
+        write('Player 1 => '), display_code('W', Color1), display_code('W', Color1), print_n(10, ' '),
+        write('Player 2 => '), display_code('B', Color2), display_code('B', Color2), print_n(11, ' '), put_code_color(0x2551, white), nl,
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -249,7 +255,7 @@ print_banner_final(Winner, Color1, Color2):-
     write(' '), line(1, Symbol, Size),
     write(' '), word_color_2('Winner: ', white, Text, Color, Symbol, Size),
     write(' '), line(1, Symbol, Size), write(' '), line(1, Symbol, Size),
-    write(' '), word('1 -> Play again               2 -> Exit ', Symbol, Size),
+    write(' '), word('1 => Play again               2 => Exit ', Symbol, Size),
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -259,7 +265,7 @@ print_banner_tie:-
     write(' '), line(1, Symbol, Size),
     write(' '), word('Game tied!', Symbol, Size),
     write(' '), line(1, Symbol, Size), write(' '), line(1, Symbol, Size),
-    write(' '), word('1 -> Play again               2 -> Exit ', Symbol, Size),
+    write(' '), word('1 => Play again               2 => Exit ', Symbol, Size),
     write(' '), line(1, Symbol, Size),
     write(' '), put_code_color(0x255A, white), print_n_code(Size, 0x2550, white), put_code_color(0x255D, white), nl.
 
@@ -270,6 +276,7 @@ banner_final_helper('p2', _, Color2, 'Player 2', Color2).
 
 
 % Board and Game ------------------------------------------------------------------------------------------------------------------
+
 % display_board(+Board, +Levels, +Color1, +Color2, +Ratio, +Size)
 % Displays the board, a bar indicating the performance of each player in the game and the heigh levels of the blocks on the board 
 display_board([], _, _, _, _, _) :- !.
@@ -403,10 +410,10 @@ display_pieces(Color1, Color2, Color):-
     piece_coordinates(piece4, [P4, P42]),
 
     write(' '), put_code_color(0x2551, Color),  write(' '), write(' '), 
-    write('Piece 1 -> '), display_cells(P1,Color1, Color2), print_n(3, ' '),
-    write('Piece 2 -> '), display_cells(P2,Color1, Color2), print_n(3, ' '),
-    write('Piece 3 -> '), display_cells(P3,Color1, Color2), print_n(3, ' '),
-    write('Piece 4 -> '), display_cells(P4,Color1, Color2), 
+    write('Piece 1 => '), display_cells(P1,Color1, Color2), print_n(3, ' '),
+    write('Piece 2 => '), display_cells(P2,Color1, Color2), print_n(3, ' '),
+    write('Piece 3 => '), display_cells(P3,Color1, Color2), print_n(3, ' '),
+    write('Piece 4 => '), display_cells(P4,Color1, Color2), 
     write(' '), write(' '), put_code_color(0x2551, Color), nl,
 
     write(' '), put_code_color(0x2551, Color),  write(' '), write(' '), 
