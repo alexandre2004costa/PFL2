@@ -426,7 +426,6 @@ display_pieces(Color1, Color2, Color):-
 
 % display_game(+GameState)
 % Displays the game, including the board and other information about the game state.
-
 display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, Ratio]) :-
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),
 

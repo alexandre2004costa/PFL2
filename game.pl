@@ -22,7 +22,8 @@ play_game(Mode, Color1, Color2, BoardSize, BoardStyle):-
     play_turn(Mode, GameState, 0.5).
 
 % initial_state(+GameConfig, -GameState)
-% Sets up the initial state of the game, generating the game state.
+% Sets up the initial configuration of the game, generating the game state.
+% Given the board size and board style, the function gets the corresponding board, levels and moves left
 initial_state([Player, OtherPlayer, Color1, Color2, BoardSize, BoardStyle], [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]):-
     board(BoardSize, BoardStyle, Board, MovesLeft),
     levels(BoardSize, BoardStyle, Levels).
@@ -37,8 +38,7 @@ play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, 
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, FinalRatio]),
     handle_game(Mode, Winner, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]).
 
-play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :- 
-    %game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),  
+play_turn(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], MoveRatio) :-  
     display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, MoveRatio]),
     what_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, NewMoveRatio, Exit),
     handle_move(Mode, [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, NewMoveRatio).
@@ -75,32 +75,32 @@ handle_move(_, [_, _, _, OtherPlayer, _, Color1, Color2, BoardSize, BoardStyle],
 % what_move(+Mode, +GameState, -N, -X, -Y, -MoveRatio, -Exit)
 % Gets the moves for different game modes
 what_move('PlayerVsPlayer', [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(BoardSize, Levels, N, X, Y, Exit),
+    read_input(Board, Levels, N, X, Y, Exit),
     player_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('PlayerVsPc_1', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(BoardSize, Levels, N, X, Y, Exit),
+    read_input(Board, Levels, N, X, Y, Exit),
     player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('PlayerVsPc_1', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move_ratio(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N, X, Y], MoveRatio).
 
 what_move('Pc_1VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(BoardSize, Levels, N, X, Y, Exit),
+    read_input(Board, Levels, N, X, Y, Exit),
     player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('Pc_1VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move_ratio(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N, X, Y], MoveRatio).
 
 what_move('PlayerVsPc_2', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(BoardSize, Levels, N, X, Y, Exit),
+    read_input(Board, Levels, N, X, Y, Exit),
     player_move(['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('PlayerVsPc_2', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
     choose_move_ratio(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, [N, X, Y], MoveRatio).
 
 what_move('Pc_2VsPlayer', ['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, Exit):-
-    read_input(BoardSize, Levels, N, X, Y, Exit),
+    read_input(Board, Levels, N, X, Y, Exit),
     player_move(['p2', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], Exit, MoveRatio).
 
 what_move('Pc_2VsPlayer', ['p1', Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y, MoveRatio, false):-
@@ -153,74 +153,75 @@ validate_option(_, N, Option) :-
     read_option(N, Option).
 
 
-% read_input(+BoardSize, +Levels, -Number, -X, -Y, -Exit)
+% read_input(+Board, +Levels, -Number, -X, -Y, -Exit)
 % Reads the user input about their move or decision to exit the game.
-read_input(BoardSize, Levels, N, X, Y, Exit) :-
+read_input(Board, Levels, N, X, Y, Exit) :-
     write('Choose the type of block (1-4) or type "exit" to give up: '),
-    read_input_type(BoardSize, Levels, N, X, Y, Exit), nl.
+    length(Board, Size),
+    read_input_type(Size, Levels, N, X, Y, Exit), nl.
 
-% read_input_type(+BoardSize, +Levels, -Number, -X, -Y, -Exit)
+% read_input_type(+Size, +Levels, -Number, -X, -Y, -Exit)
 % Reads the type of block input by the user
-read_input_type(BoardSize, Levels, N, X, Y, Exit) :-
+read_input_type(Size, Levels, N, X, Y, Exit) :-
     read(InputN),
-    validate_input_type(BoardSize, Levels, InputN, N, X, Y, Exit).
+    validate_input_type(Size, Levels, InputN, N, X, Y, Exit).
 
-% validate_input_type(+BoardSize, +Levels, +InputN, -Number, -X, -Y, -Exit) 
+% validate_input_type(+Size, +Levels, +InputN, -Number, -X, -Y, -Exit) 
 % Validates the type of block input by the user or the choice to exit
-validate_input_type(BoardSize, Levels, InputN, N, X, Y, false) :-
+validate_input_type(Size, Levels, InputN, N, X, Y, false) :-
     integer(InputN), InputN >= 1, InputN =< 4,
     N = InputN,
-    read_input_coordinates(BoardSize, Levels, X, Y), nl.
+    read_input_coordinates(Size, Levels, X, Y), nl.
 validate_input_type( _, _, 'exit', _, _, _, true).
-validate_input_type(BoardSize, Levels, _, N, X, Y, Exit) :-
+validate_input_type(Size, Levels, _, N, X, Y, Exit) :-
     write('Invalid. Choose a number between 1 and 4 or type exit.'),
-    read_input_type(BoardSize, Levels, N, X, Y, Exit).
+    read_input_type(Size, Levels, N, X, Y, Exit).
 
 
-% read_input_coordinates(+BoardSize, +Levels, -X, -Y)
+% read_input_coordinates(+Size, +Levels, -X, -Y)
 % Prompts the user to give X and Y coordinates of the move based on the board.
-read_input_coordinates(BoardSize, Levels, X, Y) :-
-    BoardSize = 1, 
+read_input_coordinates(Size, Levels, X, Y) :-
+    BoardSize = 10, 
     write('Choose the coordinate X (1-9): '), read(InputX),
     write('Choose the coordinate Y (1-9): '), read(InputY),
-    validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y).
-read_input_coordinates(BoardSize, Levels, X, Y) :-
-    BoardSize = 2,
+    validate_input_coordinates(Size, Levels, InputX, InputY, X, Y).
+read_input_coordinates(Size, Levels, X, Y) :-
+    Size = 8,
     write('Choose the coordinate X (1-7): '), read(InputX),
     write('Choose the coordinate Y (1-7): '), read(InputY),
-    validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y).
+    validate_input_coordinates(Size, Levels, InputX, InputY, X, Y).
 
-% validate_input_coordinates(+BoardSize, +Levels, +InputX, +InputY, -X, -Y)
+% validate_input_coordinates(+Size, +Levels, +InputX, +InputY, -X, -Y)
 % Validates the X and Y coordinates entered by the user.
-validate_input_coordinates(BoardSize, Levels, InputX, _, X, Y) :-
+validate_input_coordinates(Size, Levels, InputX, _, X, Y) :-
     \+ integer(InputX),
     write('The coordinates must be numbers'), nl, nl,
-    read_input_coordinates(BoardSize, Levels, X, Y).
-validate_input_coordinates(BoardSize, Levels, _, InputY, X, Y) :-
+    read_input_coordinates(Size, Levels, X, Y).
+validate_input_coordinates(Size, Levels, _, InputY, X, Y) :-
      \+ integer(InputY),
     write('The coordinates must be numbers'), nl, nl,
-    read_input_coordinates(BoardSize, Levels, X, Y). 
+    read_input_coordinates(Size, Levels, X, Y). 
 
-validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
-    BoardSize = 1, (InputX < 1; InputX > 9; InputY < 1; InputY > 9), % é suposto ter uma condição para cada?
+validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
+    Size = 10, (InputX < 1; InputX > 9; InputY < 1; InputY > 9), % é suposto ter uma condição para cada?
     write('The coordinates must be between 1 and 9.'), nl, nl,
     read_input_coordinates(BoardSize, Levels, X, Y). 
 
-validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
-    BoardSize = 2, (InputX < 1; InputX > 7; InputY < 1; InputY > 7),
+validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
+    Size = 8, (InputX < 1; InputX > 7; InputY < 1; InputY > 7),
     write('The coordinates must be between 1 and 7.'), nl, nl,
-    read_input_coordinates(BoardSize, Levels, X, Y). 
+    read_input_coordinates(Size, Levels, X, Y). 
 
-validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
-    validate_coordinates(InputX, InputY, BoardSize, Levels, Valid),
+validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
+    validate_coordinates(InputX, InputY, Size, Levels, Valid),
     Valid =:= 1,
     X = InputX, Y = InputY, !.
 
-validate_input_coordinates(BoardSize, Levels, InputX, InputY, X, Y) :-
-    validate_coordinates(InputX, InputY, BoardSize, Levels, Valid),
+validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
+    validate_coordinates(InputX, InputY, Size, Levels, Valid),
     Valid =:= 0, 
     write('Invalid coordinates. Try again.'), nl,
-    read_input_coordinates(BoardSize, Levels, X, Y).
+    read_input_coordinates(Size, Levels, X, Y).
 
 
 % Game ----------------------------------------------------------------------------------------------------------------------------
