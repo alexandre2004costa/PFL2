@@ -181,36 +181,28 @@ validate_input_type(Size, Levels, _, N, X, Y, Exit) :-
 % read_input_coordinates(+Size, +Levels, -X, -Y)
 % Prompts the user to give X and Y coordinates of the move based on the board.
 read_input_coordinates(Size, Levels, X, Y) :-
-    BoardSize = 10, 
-    write('Choose the coordinate X (1-9): '), read(InputX),
-    write('Choose the coordinate Y (1-9): '), read(InputY),
-    validate_input_coordinates(Size, Levels, InputX, InputY, X, Y).
-read_input_coordinates(Size, Levels, X, Y) :-
-    Size = 8,
-    write('Choose the coordinate X (1-7): '), read(InputX),
-    write('Choose the coordinate Y (1-7): '), read(InputY),
+    Size1 is Size - 1,
+    format('Choose the coordinate X (1-~d): ', [Size1]), read(InputX),
+    format('Choose the coordinate Y (1-~d): ', [Size1]), read(InputY),
     validate_input_coordinates(Size, Levels, InputX, InputY, X, Y).
 
 % validate_input_coordinates(+Size, +Levels, +InputX, +InputY, -X, -Y)
 % Validates the X and Y coordinates entered by the user.
 validate_input_coordinates(Size, Levels, InputX, _, X, Y) :-
     \+ integer(InputX),
-    write('The coordinates must be numbers'), nl, nl,
+    write('The X coordinate must be a number'), nl, nl,
     read_input_coordinates(Size, Levels, X, Y).
+
 validate_input_coordinates(Size, Levels, _, InputY, X, Y) :-
      \+ integer(InputY),
-    write('The coordinates must be numbers'), nl, nl,
+    write('The Y coordinate must be a number'), nl, nl,
     read_input_coordinates(Size, Levels, X, Y). 
 
 validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
-    Size = 10, (InputX < 1; InputX > 9; InputY < 1; InputY > 9), % é suposto ter uma condição para cada?
-    write('The coordinates must be between 1 and 9.'), nl, nl,
-    read_input_coordinates(BoardSize, Levels, X, Y). 
-
-validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
-    Size = 8, (InputX < 1; InputX > 7; InputY < 1; InputY > 7),
-    write('The coordinates must be between 1 and 7.'), nl, nl,
-    read_input_coordinates(Size, Levels, X, Y). 
+    Size1 is Size - 1,
+    (InputX < 1; InputX > Size1; InputY < 1; InputY > Size1), 
+    format('The coordinates must be between 1 and ~d. ', [Size1]), nl, nl,
+    read_input_coordinates(Size, Levels, X, Y).  
 
 validate_input_coordinates(Size, Levels, InputX, InputY, X, Y) :-
     validate_coordinates(InputX, InputY, Size, Levels, Valid),
@@ -248,7 +240,7 @@ generate_coordinates(Low, High, Value) :-
     Next is Low + 1,
     generate_coordinates(Next, High, Value).
 
-% validate_coordinates(+X, +Y, +Size, +Levels, -Valid);
+% validate_coordinates(+X, +Y, +Size, +Levels, -Valid)
 % Validates if the coordinates (X, Y) can be placed on the board given the levels of the blocks and the board size.
 validate_coordinates(X, Y, Size, Levels, Valid) :-
     BoardX is X-1, 
