@@ -138,26 +138,20 @@ verify_black_win(Size, [[_, _] | Visited], Success) :-
 
 game_over([_, [_ | _], _, _, 0, _, _, _, _], 'T') :- !. % No left moves, tie.
 
-%game_over([_, [_ | _], _, _, MovesPlayed, _, _, 1, _], none) :- 
-%    MovesPlayed > 49, !.    % Need at least 5 moves to win
-
-%game_over([_, [_ | _], _, _, MovesPlayed, _, _, 2, _], none) :- 
-%    MovesPlayed > 26, !.    % Need at least 4 moves to win
-
 game_over([_, [FirstLine | Board],  _, _, _, _, _, _, _], Winner) :- % Checks for a win condition for both players
     length([FirstLine | Board], Size),
-    process_line([FirstLine | Board], Size, Size, FirstLine, 1, [], Stack1),
-    dfs([FirstLine | Board], 'W', Stack1, [], Visited), !,
-    verify_white_win(Visited, WhiteWin), !,
+    process_line([FirstLine | Board], Size, Size, FirstLine, 1, [], Stack1), % Gets all 'W' cells in first row
+    dfs([FirstLine | Board], 'W', Stack1, [], Visited), !, % With the 'W' cells in first row, finds all reachable cells
+    verify_white_win(Visited, WhiteWin), !, % Verifies if any of the cells is a bottom row cell, that indicates a 'W' win
 
-    process_column([FirstLine | Board], Size, 1, [FirstLine | Board], 1, [], Stack2),
-    dfs([FirstLine | Board], 'B', Stack2, [], Visited2), !, 
-    verify_black_win(Size, Visited2, BlackWin), !,
+    process_column([FirstLine | Board], Size, 1, [FirstLine | Board], 1, [], Stack2), % Gets all 'B' cells in first column
+    dfs([FirstLine | Board], 'B', Stack2, [], Visited2), !, % With the 'B' cells in first column, finds all reachable cells
+    verify_black_win(Size, Visited2, BlackWin), !, % Verifies if any of the cells is a right-most column cell, that indicates a 'B' win
 
-    decide_winner(WhiteWin, BlackWin, Winner).
+    decide_winner(WhiteWin, BlackWin, Winner). % Decides the winner 
 
-% decide_winner(+WhiteWin, +BlackWin, -Winner)
-% Given white and black wins/losts, return the official winner.
+% decide_winner(+WhiteWin, +BlackWin, -Winner) 
+% Given white and black wins/losts, return the official winner, if there is one
 decide_winner(true, true, 'T').
 decide_winner(true, false, 'p1').
 decide_winner(false, true, 'p2').

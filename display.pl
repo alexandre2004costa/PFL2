@@ -426,17 +426,16 @@ display_pieces(Color1, Color2, Color):-
 
 % display_game(+GameState)
 % Displays the game, including the board and other information about the game state.
-
 display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, Ratio]) :-
-    game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),
+    game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], _),
 
     length(Board, BSize),
     display_board(Board, Levels, Color1, Color2, Ratio, BSize),!, nl.
 
-display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, Ratio]) :-
+display_game([Player, Board, Levels, _, MovesLeft, Color1, Color2, _, _, Ratio]) :-
     length(Board, BSize),
     display_board(Board, Levels, Color1, Color2, Ratio, BSize),!, nl,
-    display_turn(Player, MovesLeft, Color1, Color2, Winner), !.
+    display_turn(Player, MovesLeft, Color1, Color2, _), !.
 
 % display_turn(Player, MovesLeft, Color1, Color2, Winner)
 % displays next turn box in case of no winner
