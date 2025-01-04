@@ -431,11 +431,11 @@ display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boa
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Winner),
 
     length(Board, BSize),
-    display_board(Board, Levels, Color1, Color2, Ratio, BSize), nl.
+    display_board(Board, Levels, Color1, Color2, Ratio, BSize),!, nl.
 
 display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, Ratio]) :-
     length(Board, BSize),
-    display_board(Board, Levels, Color1, Color2, Ratio, BSize), nl,
+    display_board(Board, Levels, Color1, Color2, Ratio, BSize),!, nl,
 
     Size is 73,
     helper_player_color(Player, Color1, Color2, Color),
