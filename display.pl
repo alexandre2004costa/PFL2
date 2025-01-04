@@ -435,7 +435,7 @@ display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boa
 display_game([Player, Board, Levels, _, MovesLeft, Color1, Color2, _, _, Ratio]) :-
     length(Board, BSize),
     display_board(Board, Levels, Color1, Color2, Ratio, BSize),!, nl,
-    display_turn(Player, MovesLeft, Color1, Color2, Winner), !.
+    display_turn(Player, MovesLeft, Color1, Color2, _), !.
 
 % display_turn(Player, MovesLeft, Color1, Color2, Winner)
 % displays next turn box in case of no winner
