@@ -247,7 +247,7 @@ player_move(_, _, true, MoveRatio) :-
     MoveRatio = 0.
 player_move(GameState, Move, false, MoveRatio) :-
     move(GameState, Move, NewGameState),
-    value(NewGameState, MoveRatio).
+    ratio_value(NewGameState, MoveRatio).
 
 
 % Validation of Inputs ------------------------------------------------------------------------------------------------------------
@@ -361,16 +361,15 @@ generate_coordinates(Low, High, Value) :-
     generate_coordinates(Next, High, Value).
 
 
-% get_board_y(+BoardSize, +Y, -BoardY)
-% Converts a Y to the corresponding board Y coordinate based on the board size.
-get_board_y(1, Y, BoardY):- BoardY is 10 - Y.
-get_board_y(2, Y, BoardY):- BoardY is 8 - Y.
-
+% get_new_y(+BoardSize,  +Y, -NewY)
+% Converts the given Y to a new value Y coordinate based on the board size.
+get_new_y(1, Y, NewY):- NewY is 10 - Y.
+get_new_y(2, Y, NewY):- NewY is 8 - Y.
 
 % validate_coordinates(+X, +Y, +BoardSize, +Levels, -Valid)
 % Validates if the coordinates (X, Y) can be placed on the board given the levels of the blocks and the board size.
 validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
-    BoardX is X-1, get_board_y(BoardSize, Y, BoardY),
+    BoardX is X-1, get_new_y(BoardSize, Y, BoardY),
     BoardX2 is BoardX+1, BoardY2 is BoardY-1,
 
     1 is X mod 2, 1 is BoardY mod 2, 
@@ -396,11 +395,6 @@ validate_coordinates(X, Y, BoardSize, Levels, Valid) :-
 validate_coordinates(_, _, _, _, Valid) :-
     Valid is 0.
 
-
-% get_new_y(+BoardSize,  +Y, -NewY)
-% Converts the given Y to a new value Y coordinate based on the board size.
-get_new_y(1, Y, NewY):- NewY is 10 - Y.
-get_new_y(2, Y, NewY):- NewY is 8 - Y.
 
 % move(+GameState, +Move, -NewGameState)
 % Executes a move by placing a block of type N at coordinates (X, Y) on the board, if the move is valid.
@@ -432,17 +426,25 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, 
     update_piece(Levels3, NewY+1, NewX+1, NewLevel, Levels4).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-value([_, _, _, _, 0, _, _, _, _], 0.5).
-value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ClampedValue):-
+
+% value(+GameState, +Player, -Value)
+% Returns a value indicating how bad or good the game state is to the given player.
+value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Player, Value):-
+    ratio_value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Value).
+
+% ratio_value(+GameState, -Value)
+% Computes the normalized value (0 to 1), adjusting it based on winning moves and compensation. 
+ratio_value([_, _, _, _, 0, _, _, _, _], 0.5).
+ratio_value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], ClampedValue):-
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),!,
     get_compension(WMove, BMove, Player, Compensation),
-    get_value(WMove, BMove, Player, Board, Compensation, Value),
+    get_ratio_value(WMove, BMove, Player, Board, Compensation, Value),
     ClampedValue is max(0, min(1, Value)).
 
 
-%get_compension(WMove, BMove, Player, Compensation)
+% get_compension(+WMove, +BMove, +Player, -Compensation)
+% Determines the compensation based on winning or blocking moves for the other player.
 get_compension(WMove, _, Player, Compensation):-
     WMove \= none, Player = 'p2',
     Compensation = 0.15.
@@ -452,14 +454,16 @@ get_compension(_, BMove, Player, Compensation):-
 get_compension(_, _, _ ,Compensation):-
     Compensation = 0.
 
-% get_value(WMove, BMove, Player, Value)
-get_value(WMove, _, Player, _, _, Value):-
+% get_ratio_value(+WMove, +BMove, +Player, +Board, +Compensation, -Value)
+% Calculates the ratio value of the game state, based on winning and 
+% blocking moves, counts of block types and compensation.
+get_ratio_value(WMove, _, Player, _, _, Value):-
     WMove \= none, Player = 'p1',
     Value = 1.
-get_value(_, BMove, Player, _, _, Value):-
+get_ratio_value(_, BMove, Player, _, _, Value):-
     BMove \= none, Player = 'p2',
     Value = 0.
-get_value(_, _, Player, Board, Compensation, Value):-
+get_ratio_value(_, _, Player, Board, Compensation, Value):-
     NumRC is 1, get_block(Player, Block, OtherBlock),
     max_count_col(Board, NumRC, Block, CountColGood, _),
     max_count_row(Board, NumRC, OtherBlock, CountRowBad, _),
@@ -469,11 +473,15 @@ get_value(_, _, Player, Board, Compensation, Value):-
 
     Value is BaseValue + Compensation.
 
-%get_block(Player, Block, OtherBlock)
+
+% get_block(+Player, -Block, -OtherBlock)
+% Maps the player to their corresponding block type and the opponent.
 get_block('p1', 'W', 'B').
 get_block('p2', 'B', 'W').
 
 
+% max_count(+Rows, +NumRow, +Block, +CurrentMax, +CurrentRow, -Max, -MaxRow)
+% Finds the maximum count of a specific block type.
 max_count([], _, _, CurrentMax, CurrentRow, CurrentMax, CurrentRow).
 max_count([Row | Rest], NumRow, Block, CurrentMax, CurrentRow, Max, MaxRow):-
     count_block(Row, Block, CountRow),
@@ -481,6 +489,8 @@ max_count([Row | Rest], NumRow, Block, CurrentMax, CurrentRow, Max, MaxRow):-
     NextRow is NumRow + 1,
     max_count(Rest, NextRow, Block, NewMax, NewMaxRow, Max, MaxRow).
 
+% count_block(+Row, +Block, -Count)
+% Counts the occurrences of a specific block type in a given row.
 count_block([], _, 0).
 count_block([Elem | Rest], Block, Count):-
     count_block(Rest, Block, RestCount),
@@ -489,6 +499,8 @@ count_block([_ | Rest], Block, Count):-
     count_block(Rest, Block, RestCount),
     Count is RestCount.
 
+% update_max(+CountRow, +CurrentMax, +NumRow, +CurrentRow, -NewMax, -NewMaxRow)
+% Compares the current row count with the maximum count so far and updates the maximum if needed.
 update_max(CountRow, CurrentMax, NumRow, _, NewMax, NewMaxRow) :-
     CountRow > CurrentMax,
     NewMax = CountRow, NewMaxRow = NumRow.
@@ -496,15 +508,18 @@ update_max(CountRow, CurrentMax, _, CurrentRow, NewMax, NewMaxRow) :-
     CountRow =< CurrentMax,
     NewMax = CurrentMax, NewMaxRow = CurrentRow.
 
+% max_count_row(+Board, +NumRC, +Block, -CountRow, -NumRow)
+% Finds the row with the maximum count of a specific block type on the board.
 max_count_row(Board, NumRC, Block, CountRow, NumRow):-
     max_count(Board, NumRC, Block, -1, -1, CountRow, NumRow).
 
+% max_count_col(+Board, +NumRC, +Block, -CountCol, -NumCol)
+% Finds the column with the maximum count of a specific block type on the board.
 max_count_col(Board, NumRC, Block, CountCol, NumCol):-
     transpose(Board, TransposedBoard),
     max_count(TransposedBoard, NumRC, Block, -1, -1, CountCol, NumCol).
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % is_any_winning_move(+GameState, +Moves, -WhiteWinningMove, -BlackWinningMove)
 % Checks if any move in the list of Moves is a winning move for either player, and if there is saves it.
@@ -555,6 +570,7 @@ check_winner_2(_, _, NextBMove, NextBWin, BMove, BWin):-
     BMove = NextBMove, BWin = NextBWin.
 
 
+
 % random_move(+GameState, -N, -X, -Y)
 % Selects a random valid move (N, X, Y) for the given game state.
 random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y):-
@@ -566,7 +582,7 @@ random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boar
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 1, [N,X,Y], MoveRatio) :-
     random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], N, X, Y),
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], NewGameState),
-    value(NewGameState, MoveRatio).
+    ratio_value(NewGameState, MoveRatio).
 choose_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], 2, Move, MoveRatio) :-
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     is_any_winning_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, [WMove, _], [BMove, _]),
@@ -588,10 +604,10 @@ get_move_ratio([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, B
 % Finds the best move from a list of valid moves and calculates its ratio.
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move], Move, MoveRatio):-
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, NewGameState), 
-    value(NewGameState, MoveRatio).
+    ratio_value(NewGameState, MoveRatio).
 choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [Move|Moves], BestMove, MoveRatio) :-
     move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Move, NewGameState), 
-    value(NewGameState, NewMoveRatio),
+    ratio_value(NewGameState, NewMoveRatio),
     choose_best_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves, OtherMove, OtherMoveRatio),
     choose_best_move_ratio(Player, Move, OtherMove, NewMoveRatio, OtherMoveRatio, BestMove, MoveRatio).
 
