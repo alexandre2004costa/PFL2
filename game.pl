@@ -275,8 +275,12 @@ validate_coordinates(_, _, _, _, Valid) :-
 
 
 % move(+GameState, +Move, -NewGameState)
-% Responsible for executing a move in the game, updating the game state based on the parameters [N, X, Y], where N represents the type of piece and [X, Y] are the move coordinates. First, the move is validated using the validate_coordinates function to ensure that the position is valid and adheres to the game rules. Then, the piece type (N) is converted into its corresponding configuration (PieceConfig), which defines how it interacts with the board. The function updates the main board by modifying the four cells affected by the 2x2 piece, using the update_piece predicate to apply the changes according to the piece's configuration.
-% In addition to the board, the level of the affected cells is updated in the Levels structure, incrementing the value of the same four positions by 1. After all updates are applied, the active player (Player) is swapped with the inactive player (OtherPlayer), and the number of remaining moves (MovesLeft) is decremented by 1.
+% Responsible for executing a move in the game, updating the game state based on the parameters [N, X, Y], where N represents the type of piece and [X, Y] are the move coordinates. 
+% First, the move is validated using the validate_coordinates function to ensure that the position is valid and adheres to the game rules. 
+% Then, the piece type (N) is converted into its corresponding configuration (PieceConfig), which defines how it interacts with the board. 
+% The function updates the main board by modifying the four cells affected by the 2x2 piece, using the update_piece predicate to apply the changes according to the piece's configuration.
+% In addition to the board, the level of the affected cells is updated in the Levels structure, incrementing the value of the same four positions by 1. 
+% After all updates are applied, the active player (Player) is swapped with the inactive player (OtherPlayer), and the number of remaining moves (MovesLeft) is decremented by 1.
 % Executes a move by placing a block of type N at coordinates (X, Y) on the board, if the move is valid.
 move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], [N, X, Y], [OtherPlayer, Board4, Levels4, Player, Moves1, Color1, Color2, BoardSize, BoardStyle]):-
     length(Board, Size),
@@ -310,8 +314,10 @@ move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, 
 
 
 % value(+GameState, +Player, -Value)
-% The value function evaluates the game state for a given player, determining how favorable it is. It assigns a neutral value (0.5) if the turn is over. Otherwise, it uses ratio_value to calculate a score (0 to 1) based on potential winning or blocking moves and strategic factors.
-% ratio_value prioritizes winning moves and considers the distribution of favorable blocks on the board. get_compensation adjusts the score to account for immediate threats or advantages, while get_ratio_value combines block counts and compensation to calculate the final score, clamped to [0, 1].
+% The value function evaluates the game state for a given player, determining how favorable it is. 
+% It assigns a neutral value (0.5) if the turn is over. Otherwise, it uses ratio_value to calculate a score (0 to 1) based on potential winning or blocking moves and strategic factors.
+% The ratio_value prioritizes winning moves and considers the distribution of favorable blocks on the board. 
+% The get_compensation adjusts the score to account for immediate threats or advantages, while get_ratio_value combines block counts and compensation to calculate the final score, clamped to [0, 1].
 % This approach balances immediate tactics with broader strategy, providing a fair evaluation of the game state.
 % Returns a value indicating how bad or good the game state is to the given player.
 value([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Player, Value):-
@@ -462,6 +468,11 @@ random_move([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, Boar
     valid_moves([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], Moves),
     random_member([N, X, Y], Moves).
 
+
+% choose_move(+GameState, +Level, -Move)
+% Takes the current game state and outputs the move selected by the computer player. 
+% For Level 1, it generates a random valid move. 
+% For Level 2, it determines the optimal move at the moment with a greedy algorithm, which checks if there is any possible winning move and evaluates the game state with the calculated value for the player.
 choose_move(GameState, Level, Move):-
     choose_move_ratio(GameState, Level, Move, _), !.
 

@@ -425,7 +425,9 @@ display_pieces(Color1, Color2, Color):-
 
 
 % display_game(+GameState)
-% Displays the game, including the board and other information about the game state.
+% Receives the current game state and displays the game at that point.
+% Includes the board, a bar indicating how well each player is for the game state and other board showing the height of the blocks on each cell.
+% It also displays the player who will make the next move, the number of moves left and the possible piece configurations to choose from.
 display_game([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle, Ratio]) :-
     game_over([Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle], _),
 
