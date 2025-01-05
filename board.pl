@@ -74,6 +74,8 @@ board(2, 3, [
     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S'],
     ['S', 'S', 'S', 'S', 'S', 'S', 'S', 'S']
 ], 26).
+
+
 % levels(+BoardSize, +BoardStyle, -BoardLevels)
 % Represents the height level of each cell on the board.
 % Zero means an empty space and higher numbers represent stacked pieces.

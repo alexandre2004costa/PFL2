@@ -10,7 +10,9 @@
 % Play -----------------------------------------------------------------------------------------------------------------------------
 
 % play/0
-% Opens the game menu and start the game cycle
+% Opens the game menu and start the game cycle. 
+% The cycle starts in the initial menu state, where the user can choose to play, adjust custom configurations for the game or exit.
+% By default, the players colors are set to white.
 play:- state(initial, white, white, 1, 1).
 
 
@@ -23,7 +25,8 @@ play_game(Mode, Color1, Color2, BoardSize, BoardStyle):-
 
 % initial_state(+GameConfig, -GameState)
 % Sets up the initial configuration of the game, generating the game state.
-% Given the board size and board style, the function gets the corresponding board, levels and moves left
+% It includes the two players, the starting player and the opponent, as well as their respective colors.
+% Given the board size and board style, the function gets the corresponding board, levels and moves left.
 initial_state([Player, OtherPlayer, Color1, Color2, BoardSize, BoardStyle], [Player, Board, Levels, OtherPlayer, MovesLeft, Color1, Color2, BoardSize, BoardStyle]):-
     board(BoardSize, BoardStyle, Board, MovesLeft),
     levels(BoardSize, BoardStyle, Levels).
