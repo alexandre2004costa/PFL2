@@ -133,10 +133,12 @@ verify_black_win(Size, [[_, _] | Visited], Success) :-
 
 % game_over(+GameState, -Winner)
 % Determines the winner of the game based on the game state
-%The game_over function employs a strategy based on connectivity to determine the winner. It begins by identifying all potential starting points for each player: for White ('W'), these are the cells in the top row, while for Black ('B'), they are the cells in the leftmost column. Using Depth-First Search (DFS), it explores all reachable cells for each player, tracking connected components.
-%The strategy focuses on verifying if White's connected cells reach the bottom row, or if Black's reach the rightmost column, as these conditions define their respective victories. To optimize performance, the function avoids unnecessary checks by only expanding from valid starting points and skips revisiting cells. If both conditions are met simultaneously, the game ends in a tie. 
-% Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 
-%'p1' if white wins, 'p2' if black wins or 'none' otherwise
+% The game_over function employs a strategy based on connectivity to determine the winner. 
+% It begins by identifying all potential starting points for each player: for White ('W'), these are the cells in the top row, while for Black ('B'), they are the cells in the leftmost column. 
+% Using Depth-First Search (DFS), it explores all reachable cells for each player, tracking connected components.
+% The strategy focuses on verifying if White's connected cells reach the bottom row, or if Black's reach the rightmost column, as these conditions define their respective victories. 
+% To optimize performance, the function avoids unnecessary checks by only expanding from valid starting points and skips revisiting cells. If both conditions are met simultaneously, the game ends in a tie. 
+% Returns 'T' if the game ends in a tie (no moves left or white and black win at the same time), 'p1' if white wins, 'p2' if black wins or 'none' otherwise
 game_over([_, [_ | _], _, _, 0, _, _, _, _], 'T') :- !. % No left moves, tie.
 
 game_over([_, [FirstLine | Board],  _, _, _, _, _, _, _], Winner) :- % Checks for a win condition for both players
