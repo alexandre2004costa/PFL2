@@ -75,6 +75,12 @@ The game state consists of:
     - level 2 : plays the best move taking into consideration an evaluation of the game state
 ---
 
+## 📷 Screenshots
+![Imagem 1](https://github.com/user-attachments/assets/8d9a3379-8136-42be-b3ea-274969982dfa)
+![Imagem 2](https://github.com/user-attachments/assets/4a16c7ed-ec0c-44bd-b48e-e2d1494c1f23)
+
+---
+
 ## 👥 Contributors
 
 - **Alexandre Torres Costa** (50%) – Game over logic, move validation, winning conditions, color mechanics.
